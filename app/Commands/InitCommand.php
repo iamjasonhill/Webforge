@@ -116,7 +116,7 @@ class InitCommand extends Command
         // Step 1: Create Laravel project
         if (!$skipInstall) {
             $result = spin(
-                callback: fn() => $this->runCommand(['composer', 'create-project', 'laravel/laravel', $path, '--prefer-dist', '--no-interaction']),
+                callback: fn() => $this->executeProcess(['composer', 'create-project', 'laravel/laravel', $path, '--prefer-dist', '--no-interaction']),
                 message: 'Creating Laravel project...'
             );
 
@@ -134,12 +134,12 @@ class InitCommand extends Command
         // Step 2: Install Breeze with Livewire
         if (!$skipInstall) {
             spin(
-                callback: fn() => $this->runCommand(['composer', 'require', 'laravel/breeze', '--dev'], $path),
+                callback: fn() => $this->executeProcess(['composer', 'require', 'laravel/breeze', '--dev'], $path),
                 message: 'Installing Laravel Breeze...'
             );
 
             spin(
-                callback: fn() => $this->runCommand(['php', 'artisan', 'breeze:install', 'livewire', '--no-interaction'], $path),
+                callback: fn() => $this->executeProcess(['php', 'artisan', 'breeze:install', 'livewire', '--no-interaction'], $path),
                 message: 'Setting up Livewire stack...'
             );
         }
@@ -147,7 +147,7 @@ class InitCommand extends Command
         // Step 3: Install dev dependencies
         if (!$skipInstall) {
             spin(
-                callback: fn() => $this->runCommand(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan'], $path),
+                callback: fn() => $this->executeProcess(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan'], $path),
                 message: 'Installing PHPStan...'
             );
         }
@@ -155,7 +155,7 @@ class InitCommand extends Command
         // Step 4: Install Brain client if requested
         if ($withBrain && !$skipInstall) {
             spin(
-                callback: fn() => $this->runCommand(['composer', 'require', 'brain-nucleus/client'], $path),
+                callback: fn() => $this->executeProcess(['composer', 'require', 'brain-nucleus/client'], $path),
                 message: 'Installing Brain Nucleus client...'
             );
         }
@@ -197,7 +197,7 @@ class InitCommand extends Command
         // Step 9: NPM install
         if (!$skipInstall) {
             spin(
-                callback: fn() => $this->runCommand(['npm', 'install'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install'], $path),
                 message: 'Installing NPM dependencies...'
             );
         }
@@ -228,7 +228,7 @@ class InitCommand extends Command
         return self::SUCCESS;
     }
 
-    private function runCommand(array $command, ?string $cwd = null): bool
+    private function executeProcess(array $command, ?string $cwd = null): bool
     {
         $process = new Process($command, $cwd);
         $process->setTimeout(300); // 5 minutes
