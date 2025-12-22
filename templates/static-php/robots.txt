@@ -1,0 +1,11 @@
+# robots.txt - WebForge Generated
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://example.com/sitemap.xml
+
+# Block common paths
+Disallow: /partials/
+Disallow: /config.php

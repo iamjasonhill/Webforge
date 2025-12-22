@@ -57,11 +57,12 @@ composer global require webforge/cli
 
 ## Supported Platforms
 
-| Platform  | Status     | Description                      |
-| --------- | ---------- | -------------------------------- |
-| Laravel   | ✅ Ready   | Laravel 12 + Livewire + Tailwind |
-| Astro     | ✅ Ready   | TypeScript + Tailwind + Vercel   |
-| WordPress | 📋 Planned | WP-CLI managed setup             |
+| Platform   | Status     | Description                      |
+| ---------- | ---------- | -------------------------------- |
+| Laravel    | ✅ Ready   | Laravel 12 + Livewire + Tailwind |
+| Astro      | ✅ Ready   | TypeScript + Tailwind + Vercel   |
+| Static PHP | ✅ Ready   | Simple modular PHP includes      |
+| WordPress  | 📋 Planned | WP-CLI managed setup             |
 
 ## What Gets Scaffolded
 

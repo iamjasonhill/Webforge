@@ -45,8 +45,9 @@ class InitCommand extends Command
             label: 'Which platform would you like to use?',
             options: [
                 'laravel' => 'Laravel 12 + Livewire + Tailwind',
-                'wordpress' => 'WordPress (CLI-managed)',
                 'astro' => 'Astro (Static/SSR)',
+                'static-php' => 'Static PHP (Simple includes)',
+                'wordpress' => 'WordPress (CLI-managed)',
             ],
             default: 'laravel'
         );
@@ -101,8 +102,9 @@ class InitCommand extends Command
 
         return match ($platform) {
             'laravel' => $this->scaffoldLaravel($name, $path, $withBrain, $withSeo),
-            'wordpress' => $this->scaffoldWordpress($name, $path, $withBrain, $withSeo),
             'astro' => $this->scaffoldAstro($name, $path, $withBrain, $withSeo),
+            'static-php' => $this->scaffoldStaticPhp($name, $path, $withSeo),
+            'wordpress' => $this->scaffoldWordpress($name, $path, $withBrain, $withSeo),
             default => self::FAILURE,
         };
     }
@@ -256,6 +258,74 @@ class InitCommand extends Command
         info("   cp .env.example .env");
         info("   php artisan key:generate");
         info("   composer dev");
+
+        return self::SUCCESS;
+    }
+
+    private function scaffoldStaticPhp(string $name, string $path, bool $withSeo): int
+    {
+        info("\n🚀 Scaffolding Static PHP project...\n");
+
+        // Create project directory
+        if (!is_dir($path)) {
+            mkdir($path, 0755, true);
+        }
+
+        // Copy core files
+        info('📄 Copying templates...');
+        $this->copyTemplate('static-php/config.php', $path . '/config.php');
+        $this->copyTemplate('static-php/index.php', $path . '/index.php');
+        $this->copyTemplate('static-php/404.php', $path . '/404.php');
+        $this->copyTemplate('static-php/.htaccess', $path . '/.htaccess');
+        $this->copyTemplate('static-php/robots.txt', $path . '/robots.txt');
+
+        // Create partials directory and copy partials
+        $partialsPath = $path . '/partials';
+        if (!is_dir($partialsPath)) {
+            mkdir($partialsPath, 0755, true);
+        }
+
+        $this->copyTemplate('static-php/partials/head.php', $partialsPath . '/head.php');
+        $this->copyTemplate('static-php/partials/header.php', $partialsPath . '/header.php');
+        $this->copyTemplate('static-php/partials/footer.php', $partialsPath . '/footer.php');
+        $this->copyTemplate('static-php/partials/schema.php', $partialsPath . '/schema.php');
+        $this->copyTemplate('static-php/partials/analytics.php', $partialsPath . '/analytics.php');
+
+        // Create CSS directory
+        $cssPath = $path . '/css';
+        if (!is_dir($cssPath)) {
+            mkdir($cssPath, 0755, true);
+        }
+        file_put_contents($cssPath . '/style.css', "/* Your styles here */\n");
+
+        // Create images directory
+        $imagesPath = $path . '/images';
+        if (!is_dir($imagesPath)) {
+            mkdir($imagesPath, 0755, true);
+        }
+
+        // Update config with project name
+        $configPath = $path . '/config.php';
+        $config = file_get_contents($configPath);
+        $config = str_replace("'My Site'", "'" . addslashes($name) . "'", $config);
+        file_put_contents($configPath, $config);
+
+        // Done!
+        info("\n✅ Static PHP project scaffolded successfully!\n");
+        info("📁 Location: {$path}");
+        info("\n📂 Structure:");
+        info("   ├── config.php (edit your settings)");
+        info("   ├── index.php (example page)");
+        info("   ├── 404.php");
+        info("   ├── .htaccess (security headers)");
+        info("   ├── partials/");
+        info("   │   ├── head.php (SEO meta)");
+        info("   │   ├── header.php");
+        info("   │   ├── footer.php");
+        info("   │   ├── schema.php (JSON-LD)");
+        info("   │   └── analytics.php");
+        info("   └── css/style.css");
+        info("\n🚀 Upload to any PHP host to get started!");
 
         return self::SUCCESS;
     }
