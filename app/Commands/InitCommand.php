@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Services\DomainMonitorClient;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
@@ -10,6 +11,7 @@ use Symfony\Component\Process\Process;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -23,11 +25,16 @@ class InitCommand extends Command
         {--path= : Path to create project (defaults to current directory)}
         {--with-brain : Include Brain Nucleus client}
         {--with-seo : Include SEO components}
-        {--skip-install : Skip composer/npm install (for testing)}';
+        {--skip-install : Skip composer/npm install (for testing)}
+        {--from-domain : Select from Domain Monitor domains interactively}
+        {--domain= : Initialize from a specific domain in Domain Monitor}';
 
     protected $description = 'Initialize a new web project with best practices';
 
     private string $templatesPath;
+
+    /** @var array<string, mixed>|null */
+    private ?array $domainData = null;
 
     public function __construct()
     {
@@ -35,12 +42,23 @@ class InitCommand extends Command
         $this->templatesPath = base_path('templates');
     }
 
-    public function handle(): int
+    public function handle(DomainMonitorClient $client): int
     {
         info('🔨 WebForge - Project Scaffolder');
         info('================================');
 
-        // Get platform
+        // Check if we should fetch from Domain Monitor
+        if ($this->option('from-domain') || $this->option('domain')) {
+            $this->domainData = $this->fetchDomainData($client);
+            if ($this->domainData === null && $this->option('domain')) {
+                error('Domain not found in Domain Monitor: ' . $this->option('domain'));
+
+                return self::FAILURE;
+            }
+        }
+
+        // Get platform (pre-fill from domain if available)
+        $defaultPlatform = $this->getDefaultPlatform();
         $platform = $this->option('platform') ?? select(
             label: 'Which platform would you like to use?',
             options: [
@@ -49,13 +67,17 @@ class InitCommand extends Command
                 'static-php' => 'Static PHP (Simple includes)',
                 'wordpress' => 'WordPress (CLI-managed)',
             ],
-            default: 'laravel'
+            default: $defaultPlatform
         );
 
-        // Get project name
+        // Get project name (pre-fill from domain if available)
+        $defaultName = $this->domainData['project_key']
+            ?? $this->domainData['domain']
+            ?? null;
         $name = $this->option('name') ?? text(
             label: 'What is your project name?',
             placeholder: 'my-awesome-site',
+            default: $defaultName ?? '',
             required: true
         );
 
@@ -92,11 +114,16 @@ class InitCommand extends Command
         info("  Platform: {$platform}");
         info("  Name: {$name}");
         info("  Path: {$path}");
-        info("  Brain: " . ($withBrain ? 'Yes' : 'No'));
-        info("  SEO: " . ($withSeo ? 'Yes' : 'No'));
+        info('  Brain: ' . ($withBrain ? 'Yes' : 'No'));
+        info('  SEO: ' . ($withSeo ? 'Yes' : 'No'));
+
+        if ($this->domainData) {
+            info('  Domain: ' . $this->domainData['domain']);
+        }
 
         if (!confirm("\nProceed with scaffolding?", true)) {
             warning('Cancelled.');
+
             return self::FAILURE;
         }
 
@@ -108,6 +135,95 @@ class InitCommand extends Command
             default => self::FAILURE,
         };
     }
+
+    /**
+     * Fetch domain data from Domain Monitor.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function fetchDomainData(DomainMonitorClient $client): ?array
+    {
+        if (!$client->isConfigured()) {
+            warning('Domain Monitor is not configured. Skipping domain lookup.');
+            info('Set DOMAIN_MONITOR_URL and DOMAIN_MONITOR_API_KEY to enable.');
+
+            return null;
+        }
+
+        // Direct domain lookup
+        if ($domain = $this->option('domain')) {
+            try {
+                return $client->getDomain($domain);
+            } catch (\Exception $e) {
+                warning('Failed to fetch domain: ' . $e->getMessage());
+
+                return null;
+            }
+        }
+
+        // Interactive domain selection
+        try {
+            $domains = $client->getDomains(['status' => 'active']);
+
+            if (empty($domains)) {
+                warning('No domains found in Domain Monitor.');
+
+                return null;
+            }
+
+            $options = [];
+            foreach ($domains as $d) {
+                $name = $d['name'] ?? $d['domain'] ?? 'Unknown';
+                $platform = $d['metadata']['platform'] ?? 'Unknown';
+                $options[$name] = "{$name} ({$platform})";
+            }
+
+            $selected = search(
+                label: 'Select a domain from Domain Monitor:',
+                options: fn(string $value) => strlen($value) > 0
+                ? collect($options)->filter(fn($label) => str_contains(strtolower($label), strtolower($value)))->all()
+                : $options,
+                placeholder: 'Type to search domains...'
+            );
+
+            if ($selected) {
+                return $client->getDomain($selected);
+            }
+        } catch (\Exception $e) {
+            warning('Failed to fetch domains: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the default platform based on domain data.
+     */
+    private function getDefaultPlatform(): string
+    {
+        if (!$this->domainData) {
+            return 'laravel';
+        }
+
+        $platform = $this->domainData['platform']['type']
+            ?? $this->domainData['metadata']['platform']
+            ?? null;
+
+        if (!$platform) {
+            return 'laravel';
+        }
+
+        $platform = strtolower($platform);
+
+        return match (true) {
+            str_contains($platform, 'wordpress') => 'wordpress',
+            str_contains($platform, 'astro') => 'astro',
+            str_contains($platform, 'laravel') => 'laravel',
+            str_contains($platform, 'php') => 'static-php',
+            default => 'laravel',
+        };
+    }
+
 
     private function scaffoldLaravel(string $name, string $path, bool $withBrain, bool $withSeo): int
     {

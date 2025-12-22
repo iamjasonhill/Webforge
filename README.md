@@ -42,6 +42,41 @@ composer global require webforge/cli
 ./webforge init --help
 ```
 
+### Initialize from Domain Monitor
+
+Pull domain metadata from Domain Monitor to pre-fill project settings:
+
+```bash
+# Interactive: select from domain list
+./webforge init --from-domain
+
+# Direct: specify domain by name, ID, or project key
+./webforge init --domain=example.com
+```
+
+Configure Domain Monitor connection via environment variables:
+
+```bash
+export DOMAIN_MONITOR_URL=https://your-domain-monitor.example.com
+export DOMAIN_MONITOR_API_KEY=your-api-key
+```
+
+### List Domains
+
+```bash
+# List all domains from Domain Monitor
+./webforge domains
+
+# Filter by tag
+./webforge domains --tag=migration-ready
+
+# Filter by platform
+./webforge domains --platform=wordpress
+
+# Output as JSON
+./webforge domains --json
+```
+
 ### Audit an Existing Project
 
 ```bash
