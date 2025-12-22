@@ -178,21 +178,41 @@ class InitCommand extends Command
             $this->copyTemplate('laravel/components/seo-head.blade.php', $componentsPath . '/seo-head.blade.php');
             $this->copyTemplate('laravel/components/json-ld.blade.php', $componentsPath . '/json-ld.blade.php');
             $this->copyTemplate('laravel/components/image.blade.php', $componentsPath . '/image.blade.php');
+            $this->copyTemplate('laravel/components/breadcrumbs.blade.php', $componentsPath . '/breadcrumbs.blade.php');
+            $this->copyTemplate('laravel/components/analytics.blade.php', $componentsPath . '/analytics.blade.php');
 
             // Copy SEO config
             $this->copyTemplate('laravel/config/seo.php', $path . '/config/seo.php');
 
-            // Copy robots.txt
+            // Copy robots.txt and manifest
             $this->copyTemplate('laravel/public/robots.txt', $path . '/public/robots.txt');
+            $this->copyTemplate('laravel/public/manifest.json', $path . '/public/manifest.json');
 
             // Copy sitemap view
             $this->copyTemplate('laravel/views/sitemap.blade.php', $path . '/resources/views/sitemap.blade.php');
+
+            // Copy error pages
+            $errorsPath = $path . '/resources/views/errors';
+            if (!is_dir($errorsPath)) {
+                mkdir($errorsPath, 0755, true);
+            }
+            $this->copyTemplate('laravel/errors/404.blade.php', $errorsPath . '/404.blade.php');
+            $this->copyTemplate('laravel/errors/500.blade.php', $errorsPath . '/500.blade.php');
+
+            // Copy security middleware
+            $middlewarePath = $path . '/app/Http/Middleware';
+            if (is_dir($middlewarePath)) {
+                $this->copyTemplate('laravel/middleware/SecurityHeaders.php', $middlewarePath . '/SecurityHeaders.php');
+            }
 
             // Append sitemap route to web.php
             $this->appendToFile($path . '/routes/web.php', file_get_contents($this->templatesPath . '/laravel/routes/sitemap-route.php'));
 
             // Add SEO env vars to .env.example
             $this->appendToFile($path . '/.env.example', "\n# SEO\nSEO_DEFAULT_DESCRIPTION=\"Your site description\"\nSEO_DEFAULT_IMAGE=\nSEO_TWITTER_HANDLE=\nSEO_LOGO=\n");
+
+            // Add analytics env var
+            $this->appendToFile($path . '/.env.example', "\n# Analytics\nGOOGLE_ANALYTICS_ID=\n");
         }
 
         // Step 7: Copy CI/CD workflow

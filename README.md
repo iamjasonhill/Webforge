@@ -86,14 +86,22 @@ When you run `./webforge init --platform=laravel`, you get:
 templates/laravel/
 ├── components/
 │   ├── seo-head.blade.php    # Meta tags, OG, Twitter cards
-│   ├── json-ld.blade.php     # Structured data (Schema.org)
-│   └── image.blade.php       # Optimized image with lazy loading
+│   ├── json-ld.blade.php     # Structured data (6 schema types)
+│   ├── image.blade.php       # Optimized image with lazy loading
+│   ├── breadcrumbs.blade.php # Breadcrumb nav with Schema.org
+│   └── analytics.blade.php   # GA4/GTM/Plausible support
 ├── config/
 │   ├── pint.json             # Laravel Pint code style
 │   ├── phpstan.neon          # PHPStan static analysis
 │   └── seo.php               # SEO configuration
+├── errors/
+│   ├── 404.blade.php         # Custom 404 page
+│   └── 500.blade.php         # Custom 500 page
+├── middleware/
+│   └── SecurityHeaders.php   # Security headers middleware
 ├── public/
-│   └── robots.txt            # Search engine crawling rules
+│   ├── robots.txt            # Search engine crawling rules
+│   └── manifest.json         # PWA web manifest
 ├── views/
 │   └── sitemap.blade.php     # Dynamic XML sitemap
 ├── routes/
@@ -110,11 +118,16 @@ templates/laravel/
 - [x] SEO components (meta tags, Open Graph, JSON-LD)
 - [x] PHPStan + Pint configuration
 - [x] Brain Nucleus integration
-- [x] Project audit command
+- [x] Project audit command (10 checks)
 - [x] Pre-commit hook template
 - [x] CI/CD workflow template
 - [x] Optimized image component
 - [x] robots.txt + sitemap templates
+- [x] Security headers middleware
+- [x] Custom error pages (404/500)
+- [x] Breadcrumb component
+- [x] PWA web manifest
+- [x] Analytics component
 - [ ] WordPress WP-CLI scaffolding
 - [ ] Astro scaffolding
 - [ ] Template versioning

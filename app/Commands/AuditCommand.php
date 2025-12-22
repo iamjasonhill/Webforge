@@ -172,6 +172,33 @@ class AuditCommand extends Command
             $results[] = ['Async Scripts', '⚠️ Warn', 'Consider adding async/defer to scripts'];
         }
 
+        // Check for security headers middleware
+        $maxScore += 1;
+        if ($this->hasSecurityMiddleware($path, $projectType)) {
+            $results[] = ['Security Headers', '✅ Pass', 'SecurityHeaders middleware found'];
+            $score += 1;
+        } else {
+            $results[] = ['Security Headers', '⚠️ Warn', 'Consider adding security headers middleware'];
+        }
+
+        // Check for custom error pages
+        $maxScore += 1;
+        if ($this->hasErrorPages($path, $projectType)) {
+            $results[] = ['Error Pages', '✅ Pass', 'Custom 404/500 pages found'];
+            $score += 1;
+        } else {
+            $results[] = ['Error Pages', '⚠️ Warn', 'Consider adding custom error pages'];
+        }
+
+        // Check for web manifest
+        $maxScore += 1;
+        if ($this->hasWebManifest($path, $projectType)) {
+            $results[] = ['Web Manifest', '✅ Pass', 'manifest.json found'];
+            $score += 1;
+        } else {
+            $results[] = ['Web Manifest', '⚠️ Warn', 'Consider adding manifest.json for PWA support'];
+        }
+
         return [$results, $score, $maxScore];
     }
 
@@ -294,6 +321,36 @@ class AuditCommand extends Command
         }
 
         return false;
+    }
+
+    private function hasSecurityMiddleware(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => file_exists($path . '/app/Http/Middleware/SecurityHeaders.php')
+            || $this->grepInFile($path . '/app/Http/Kernel.php', 'SecurityHeaders'),
+            default => false,
+        };
+    }
+
+    private function hasErrorPages(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => file_exists($path . '/resources/views/errors/404.blade.php')
+            && file_exists($path . '/resources/views/errors/500.blade.php'),
+            'astro' => file_exists($path . '/src/pages/404.astro'),
+            default => false,
+        };
+    }
+
+    private function hasWebManifest(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => file_exists($path . '/public/manifest.json')
+            || file_exists($path . '/public/site.webmanifest'),
+            'astro' => file_exists($path . '/public/manifest.json')
+            || file_exists($path . '/public/site.webmanifest'),
+            default => file_exists($path . '/manifest.json'),
+        };
     }
 
     public function schedule(Schedule $schedule): void
