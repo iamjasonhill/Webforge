@@ -60,8 +60,8 @@ composer global require webforge/cli
 | Platform  | Status     | Description                      |
 | --------- | ---------- | -------------------------------- |
 | Laravel   | ✅ Ready   | Laravel 12 + Livewire + Tailwind |
+| Astro     | ✅ Ready   | TypeScript + Tailwind + Vercel   |
 | WordPress | 📋 Planned | WP-CLI managed setup             |
-| Astro     | 📋 Planned | Static/SSR site generator        |
 
 ## What Gets Scaffolded
 

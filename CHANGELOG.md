@@ -11,7 +11,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - WordPress scaffolding (coming soon)
-- Astro scaffolding (coming soon)
+
+---
+
+## [0.3.0] - 2023-12-23
+
+### Added
+
+- Full Astro scaffolding support
+- Astro SEO component (meta tags, OG, Twitter)
+- Astro Schema component (7 JSON-LD types)
+- Astro Breadcrumbs component
+- Astro Analytics component (GA4, GTM, Plausible)
+- Custom 404 page for Astro
+- Deployment configs (vercel.json, netlify.toml)
+- ESLint + Prettier config for Astro
+- GitHub Actions CI for Astro
 
 ---
 

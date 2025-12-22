@@ -269,9 +269,111 @@ class InitCommand extends Command
 
     private function scaffoldAstro(string $name, string $path, bool $withBrain, bool $withSeo): int
     {
-        info("\n🚀 Scaffolding Astro project...");
-        warning('Astro scaffolding not yet implemented. Coming soon!');
+        info("\n🚀 Scaffolding Astro project...\n");
+
+        $skipInstall = $this->option('skip-install');
+
+        // Step 1: Create Astro project
+        if (!$skipInstall) {
+            $result = spin(
+                callback: fn() => $this->executeProcess(['npm', 'create', 'astro@latest', $path, '--', '--template=minimal', '--install', '--no-git', '-y'], null),
+                message: 'Creating Astro project...'
+            );
+
+            if (!$result) {
+                error('Failed to create Astro project');
+                return self::FAILURE;
+            }
+
+            // Install additional dependencies
+            spin(
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'prettier', 'prettier-plugin-astro'], $path),
+                message: 'Installing dependencies...'
+            );
+        } else {
+            info('⏭️  Skipping Astro installation (--skip-install)');
+            if (!is_dir($path)) {
+                mkdir($path, 0755, true);
+            }
+        }
+
+        // Step 2: Copy config files
+        info('📄 Copying configuration files...');
+        $this->copyTemplate('astro/astro.config.mjs', $path . '/astro.config.mjs');
+        $this->copyTemplate('astro/tsconfig.json', $path . '/tsconfig.json');
+        $this->copyTemplate('astro/.prettierrc', $path . '/.prettierrc');
+        $this->copyTemplate('astro/eslint.config.js', $path . '/eslint.config.js');
+        $this->copyTemplate('astro/.env.example', $path . '/.env.example');
+
+        // Step 3: Copy SEO components if requested
+        if ($withSeo) {
+            info('🔍 Setting up SEO components...');
+
+            $componentsPath = $path . '/src/components';
+            if (!is_dir($componentsPath)) {
+                mkdir($componentsPath, 0755, true);
+            }
+
+            $this->copyTemplate('astro/src/components/SEO.astro', $componentsPath . '/SEO.astro');
+            $this->copyTemplate('astro/src/components/Schema.astro', $componentsPath . '/Schema.astro');
+            $this->copyTemplate('astro/src/components/Breadcrumbs.astro', $componentsPath . '/Breadcrumbs.astro');
+            $this->copyTemplate('astro/src/components/Analytics.astro', $componentsPath . '/Analytics.astro');
+
+            // Copy pages
+            $pagesPath = $path . '/src/pages';
+            if (!is_dir($pagesPath)) {
+                mkdir($pagesPath, 0755, true);
+            }
+            $this->copyTemplate('astro/src/pages/404.astro', $pagesPath . '/404.astro');
+
+            // Copy public files
+            $this->copyTemplate('astro/public/robots.txt', $path . '/public/robots.txt');
+        }
+
+        // Step 4: Copy deployment configs
+        info('🚀 Setting up deployment configs...');
+        $this->copyTemplate('astro/vercel.json', $path . '/vercel.json');
+        $this->copyTemplate('astro/netlify.toml', $path . '/netlify.toml');
+
+        // Step 5: Copy CI workflow
+        info('🔧 Setting up CI/CD...');
+        $workflowsPath = $path . '/.github/workflows';
+        if (!is_dir($workflowsPath)) {
+            mkdir($workflowsPath, 0755, true);
+        }
+        $this->copyTemplate('astro/.github/workflows/ci.yml', $workflowsPath . '/ci.yml');
+
+        // Step 6: Add npm scripts
+        $this->addAstroNpmScripts($path);
+
+        // Done!
+        info("\n✅ Astro project scaffolded successfully!\n");
+        info("📁 Location: {$path}");
+        info("\n🚀 Next steps:");
+        info("   cd {$path}");
+        info("   cp .env.example .env");
+        info("   npm run dev");
+
         return self::SUCCESS;
+    }
+
+    private function addAstroNpmScripts(string $path): void
+    {
+        $packagePath = $path . '/package.json';
+
+        if (!file_exists($packagePath)) {
+            return;
+        }
+
+        $package = json_decode(file_get_contents($packagePath), true);
+
+        $package['scripts']['lint'] = 'eslint .';
+        $package['scripts']['lint:fix'] = 'eslint . --fix';
+        $package['scripts']['format'] = 'prettier --write .';
+        $package['scripts']['format:check'] = 'prettier --check .';
+
+        file_put_contents($packagePath, json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
+        info("  ✓ Added npm scripts");
     }
 
     private function executeProcess(array $command, ?string $cwd = null): bool

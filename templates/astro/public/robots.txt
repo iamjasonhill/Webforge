@@ -1,0 +1,12 @@
+# robots.txt - WebForge Generated
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://example.com/sitemap-index.xml
+
+# Common paths to block
+Disallow: /api/
+Disallow: /_astro/

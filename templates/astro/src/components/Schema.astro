@@ -1,0 +1,109 @@
+---
+interface Props {
+  type: 'WebSite' | 'Organization' | 'Article' | 'Product' | 'FAQPage' | 'LocalBusiness' | 'BreadcrumbList';
+  data?: Record<string, any>;
+}
+
+const { type, data = {} } = Astro.props;
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || Astro.site?.href || '';
+const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Site';
+
+function generateSchema(type: string, data: Record<string, any>) {
+  const baseSchema = {
+    '@context': 'https://schema.org',
+    '@type': type,
+  };
+
+  switch (type) {
+    case 'WebSite':
+      return {
+        ...baseSchema,
+        name: siteName,
+        url: siteUrl,
+        ...data,
+      };
+    case 'Organization':
+      return {
+        ...baseSchema,
+        name: siteName,
+        url: siteUrl,
+        logo: data.logo || '',
+        ...data,
+      };
+    case 'LocalBusiness':
+      return {
+        ...baseSchema,
+        name: data.name || siteName,
+        url: siteUrl,
+        address: data.address || {},
+        telephone: data.telephone || '',
+        openingHours: data.openingHours || '',
+        ...data,
+      };
+    case 'Article':
+      return {
+        ...baseSchema,
+        headline: data.headline || '',
+        author: {
+          '@type': 'Person',
+          name: data.author || '',
+        },
+        datePublished: data.datePublished || '',
+        dateModified: data.dateModified || data.datePublished || '',
+        image: data.image || '',
+        publisher: {
+          '@type': 'Organization',
+          name: siteName,
+          logo: data.logo || '',
+        },
+        ...data,
+      };
+    case 'Product':
+      return {
+        ...baseSchema,
+        name: data.name || '',
+        description: data.description || '',
+        image: data.image || '',
+        brand: {
+          '@type': 'Brand',
+          name: data.brand || siteName,
+        },
+        offers: {
+          '@type': 'Offer',
+          price: data.price || '',
+          priceCurrency: data.currency || 'AUD',
+          availability: data.availability || 'https://schema.org/InStock',
+        },
+        ...data,
+      };
+    case 'FAQPage':
+      return {
+        ...baseSchema,
+        mainEntity: (data.questions || []).map((q: { question: string; answer: string }) => ({
+          '@type': 'Question',
+          name: q.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: q.answer,
+          },
+        })),
+      };
+    case 'BreadcrumbList':
+      return {
+        ...baseSchema,
+        itemListElement: (data.items || []).map((item: { name: string; url?: string }, index: number) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url,
+        })),
+      };
+    default:
+      return { ...baseSchema, ...data };
+  }
+}
+
+const schema = generateSchema(type, data);
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema, null, 2)} />
