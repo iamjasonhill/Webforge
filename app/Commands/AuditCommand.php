@@ -217,6 +217,24 @@ class AuditCommand extends Command
             $results[] = ['Alt Attributes', '⚠️ Warn', 'Some images may be missing alt attributes'];
         }
 
+        // Check for skip link (accessibility)
+        $maxScore += 1;
+        if ($this->hasSkipLink($path, $projectType)) {
+            $results[] = ['Skip Link', '✅ Pass', 'Skip to content link found'];
+            $score += 1;
+        } else {
+            $results[] = ['Skip Link', '⚠️ Warn', 'Consider adding skip link for keyboard users'];
+        }
+
+        // Check for lang attribute on html
+        $maxScore += 1;
+        if ($this->hasLangAttribute($path, $projectType)) {
+            $results[] = ['Lang Attribute', '✅ Pass', 'HTML has lang attribute'];
+            $score += 1;
+        } else {
+            $results[] = ['Lang Attribute', '⚠️ Warn', 'Add lang attribute to <html> element'];
+        }
+
         return [$results, $score, $maxScore];
     }
 
@@ -350,6 +368,26 @@ class AuditCommand extends Command
             'astro' => file_exists($path . '/public/manifest.json')
             || file_exists($path . '/public/site.webmanifest'),
             default => file_exists($path . '/manifest.json'),
+        };
+    }
+
+    private function hasSkipLink(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => $this->grepInDirectory($path . '/resources/views', 'skip')
+            && $this->grepInDirectory($path . '/resources/views', '#main'),
+            'astro' => file_exists($path . '/src/components/SkipLink.astro')
+            || $this->grepInDirectory($path . '/src', 'skip-link'),
+            default => false,
+        };
+    }
+
+    private function hasLangAttribute(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => $this->grepInDirectory($path . '/resources/views', 'lang="'),
+            'astro' => $this->grepInDirectory($path . '/src', '<html lang'),
+            default => false,
         };
     }
 
