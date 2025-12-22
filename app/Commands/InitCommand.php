@@ -168,33 +168,59 @@ class InitCommand extends Command
         // Step 6: Copy SEO components if requested
         if ($withSeo) {
             info('🔍 Setting up SEO components...');
-            
+
             // Create components directory
             $componentsPath = $path . '/resources/views/components';
             if (!is_dir($componentsPath)) {
                 mkdir($componentsPath, 0755, true);
             }
-            
+
             $this->copyTemplate('laravel/components/seo-head.blade.php', $componentsPath . '/seo-head.blade.php');
             $this->copyTemplate('laravel/components/json-ld.blade.php', $componentsPath . '/json-ld.blade.php');
-            
+            $this->copyTemplate('laravel/components/image.blade.php', $componentsPath . '/image.blade.php');
+
             // Copy SEO config
             $this->copyTemplate('laravel/config/seo.php', $path . '/config/seo.php');
+
+            // Copy robots.txt
+            $this->copyTemplate('laravel/public/robots.txt', $path . '/public/robots.txt');
+
+            // Copy sitemap view
+            $this->copyTemplate('laravel/views/sitemap.blade.php', $path . '/resources/views/sitemap.blade.php');
+
+            // Append sitemap route to web.php
+            $this->appendToFile($path . '/routes/web.php', file_get_contents($this->templatesPath . '/laravel/routes/sitemap-route.php'));
 
             // Add SEO env vars to .env.example
             $this->appendToFile($path . '/.env.example', "\n# SEO\nSEO_DEFAULT_DESCRIPTION=\"Your site description\"\nSEO_DEFAULT_IMAGE=\nSEO_TWITTER_HANDLE=\nSEO_LOGO=\n");
         }
 
-        // Step 7: Add composer scripts
+        // Step 7: Copy CI/CD workflow
+        info('🔧 Setting up CI/CD...');
+        $workflowsPath = $path . '/.github/workflows';
+        if (!is_dir($workflowsPath)) {
+            mkdir($workflowsPath, 0755, true);
+        }
+        $this->copyTemplate('laravel/workflows/ci.yml', $workflowsPath . '/ci.yml');
+
+        // Step 8: Copy pre-commit hook
+        info('🪝 Setting up pre-commit hook...');
+        $hooksPath = $path . '/.git/hooks';
+        if (is_dir($hooksPath)) {
+            $this->copyTemplate('laravel/scripts/pre-commit', $hooksPath . '/pre-commit');
+            chmod($hooksPath . '/pre-commit', 0755);
+        }
+
+        // Step 9: Add composer scripts
         info('📝 Adding composer scripts...');
         $this->addComposerScripts($path);
 
-        // Step 8: Add Brain env vars if requested
+        // Step 10: Add Brain env vars if requested
         if ($withBrain) {
             $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
         }
 
-        // Step 9: NPM install
+        // Step 11: NPM install
         if (!$skipInstall) {
             spin(
                 callback: fn() => $this->executeProcess(['npm', 'install'], $path),
@@ -240,14 +266,14 @@ class InitCommand extends Command
     private function copyTemplate(string $templatePath, string $destPath): void
     {
         $sourcePath = $this->templatesPath . '/' . $templatePath;
-        
+
         if (file_exists($sourcePath)) {
             // Ensure directory exists
             $destDir = dirname($destPath);
             if (!is_dir($destDir)) {
                 mkdir($destDir, 0755, true);
             }
-            
+
             copy($sourcePath, $destPath);
             info("  ✓ Created: " . basename($destPath));
         } else {
@@ -265,7 +291,7 @@ class InitCommand extends Command
     private function addComposerScripts(string $path): void
     {
         $composerPath = $path . '/composer.json';
-        
+
         if (!file_exists($composerPath)) {
             return;
         }

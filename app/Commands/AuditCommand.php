@@ -51,6 +51,13 @@ class AuditCommand extends Command
             $maxScore += $perfMax;
         }
 
+        if ($this->option('accessibility') || !$this->hasAnyOption()) {
+            [$a11yResults, $a11yScore, $a11yMax] = $this->auditAccessibility($path, $projectType);
+            $results = array_merge($results, $a11yResults);
+            $score += $a11yScore;
+            $maxScore += $a11yMax;
+        }
+
         // Display results
         if (!empty($results)) {
             table(
@@ -138,9 +145,50 @@ class AuditCommand extends Command
         $score = 0;
         $maxScore = 0;
 
-        // Check for lazy loading
+        // Check for favicon
         $maxScore += 1;
-        $results[] = ['Lazy Loading', '⚠️ Skip', 'Manual check required'];
+        if ($this->hasFavicon($path, $projectType)) {
+            $results[] = ['Favicon', '✅ Pass', 'Favicon found'];
+            $score += 1;
+        } else {
+            $results[] = ['Favicon', '❌ Fail', 'No favicon.ico found in public/'];
+        }
+
+        // Check for lazy loading in blade templates
+        $maxScore += 1;
+        if ($this->hasLazyLoading($path, $projectType)) {
+            $results[] = ['Lazy Loading', '✅ Pass', 'loading="lazy" found in templates'];
+            $score += 1;
+        } else {
+            $results[] = ['Lazy Loading', '⚠️ Warn', 'Consider adding loading="lazy" to images'];
+        }
+
+        // Check for async/defer scripts
+        $maxScore += 1;
+        if ($this->hasAsyncScripts($path, $projectType)) {
+            $results[] = ['Async Scripts', '✅ Pass', 'Scripts use async/defer'];
+            $score += 1;
+        } else {
+            $results[] = ['Async Scripts', '⚠️ Warn', 'Consider adding async/defer to scripts'];
+        }
+
+        return [$results, $score, $maxScore];
+    }
+
+    private function auditAccessibility(string $path, string $projectType): array
+    {
+        $results = [];
+        $score = 0;
+        $maxScore = 0;
+
+        // Check for alt attributes on images
+        $maxScore += 1;
+        if ($this->hasAltAttributes($path, $projectType)) {
+            $results[] = ['Alt Attributes', '✅ Pass', 'Images have alt attributes'];
+            $score += 1;
+        } else {
+            $results[] = ['Alt Attributes', '⚠️ Warn', 'Some images may be missing alt attributes'];
+        }
 
         return [$results, $score, $maxScore];
     }
@@ -148,9 +196,9 @@ class AuditCommand extends Command
     private function hasSitemap(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/public/sitemap.xml') 
-                || file_exists($path . '/routes/sitemap.php')
-                || $this->grepInFile($path . '/routes/web.php', 'sitemap'),
+            'laravel' => file_exists($path . '/public/sitemap.xml')
+            || file_exists($path . '/routes/sitemap.php')
+            || $this->grepInFile($path . '/routes/web.php', 'sitemap'),
             'wordpress' => true, // Usually handled by plugins
             'astro' => file_exists($path . '/public/sitemap.xml'),
             default => file_exists($path . '/sitemap.xml'),
@@ -161,7 +209,7 @@ class AuditCommand extends Command
     {
         return match ($projectType) {
             'laravel' => file_exists($path . '/public/robots.txt')
-                || $this->grepInFile($path . '/routes/web.php', 'robots'),
+            || $this->grepInFile($path . '/routes/web.php', 'robots'),
             'wordpress' => true, // WordPress generates it
             'astro' => file_exists($path . '/public/robots.txt'),
             default => file_exists($path . '/robots.txt'),
@@ -172,7 +220,7 @@ class AuditCommand extends Command
     {
         return match ($projectType) {
             'laravel' => file_exists($path . '/resources/views/components/seo-head.blade.php')
-                || file_exists($path . '/app/View/Components/SeoHead.php'),
+            || file_exists($path . '/app/View/Components/SeoHead.php'),
             'astro' => file_exists($path . '/src/components/SEO.astro'),
             default => false,
         };
@@ -184,6 +232,68 @@ class AuditCommand extends Command
             return false;
         }
         return str_contains(file_get_contents($file), $needle);
+    }
+
+    private function hasFavicon(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => file_exists($path . '/public/favicon.ico')
+            || file_exists($path . '/public/favicon.svg'),
+            'astro' => file_exists($path . '/public/favicon.ico')
+            || file_exists($path . '/public/favicon.svg'),
+            default => file_exists($path . '/favicon.ico'),
+        };
+    }
+
+    private function hasLazyLoading(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => $this->grepInDirectory($path . '/resources/views', 'loading="lazy"')
+            || $this->grepInDirectory($path . '/resources/views', "loading='lazy'"),
+            'astro' => $this->grepInDirectory($path . '/src', 'loading="lazy"'),
+            default => false,
+        };
+    }
+
+    private function hasAsyncScripts(string $path, string $projectType): bool
+    {
+        return match ($projectType) {
+            'laravel' => $this->grepInDirectory($path . '/resources/views', 'defer')
+            || $this->grepInDirectory($path . '/resources/views', 'async'),
+            'astro' => $this->grepInDirectory($path . '/src', 'defer')
+            || $this->grepInDirectory($path . '/src', 'async'),
+            default => false,
+        };
+    }
+
+    private function hasAltAttributes(string $path, string $projectType): bool
+    {
+        // Check if images have alt attributes - look for img tags with alt
+        return match ($projectType) {
+            'laravel' => $this->grepInDirectory($path . '/resources/views', 'alt="')
+            || $this->grepInDirectory($path . '/resources/views', "alt='"),
+            'astro' => $this->grepInDirectory($path . '/src', 'alt="'),
+            default => false,
+        };
+    }
+
+    private function grepInDirectory(string $directory, string $needle): bool
+    {
+        if (!is_dir($directory)) {
+            return false;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS)
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $this->grepInFile($file->getPathname(), $needle)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function schedule(Schedule $schedule): void

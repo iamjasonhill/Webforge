@@ -2,12 +2,15 @@
 
 > Build websites with purpose. Best practices baked in from the start.
 
-WebForge is a CLI tool for scaffolding web projects with SEO, performance, and quality practices built-in from day one. Built with [Laravel Zero](https://laravel-zero.com/).
+WebForge is a CLI tool for scaffolding web projects with SEO, performance, and
+quality practices built-in from day one. Built with
+[Laravel Zero](https://laravel-zero.com/).
 
 ## Features
 
 - 🚀 **Multi-platform support** - Laravel, WordPress, Astro
-- 🔍 **SEO-first** - Meta tags, sitemaps, structured data scaffolded automatically
+- 🔍 **SEO-first** - Meta tags, sitemaps, structured data scaffolded
+  automatically
 - 🔧 **CLI-driven** - Repeatable, version-controlled project setup
 - 📊 **Audit tool** - Check projects for best practices compliance
 - 🧠 **Brain integration** - Send events to Brain Nucleus for monitoring
@@ -54,11 +57,11 @@ composer global require webforge/cli
 
 ## Supported Platforms
 
-| Platform | Status | Description |
-|----------|--------|-------------|
-| Laravel | ✅ Ready | Laravel 12 + Livewire + Tailwind |
-| WordPress | 📋 Planned | WP-CLI managed setup |
-| Astro | 📋 Planned | Static/SSR site generator |
+| Platform  | Status     | Description                      |
+| --------- | ---------- | -------------------------------- |
+| Laravel   | ✅ Ready   | Laravel 12 + Livewire + Tailwind |
+| WordPress | 📋 Planned | WP-CLI managed setup             |
+| Astro     | 📋 Planned | Static/SSR site generator        |
 
 ## What Gets Scaffolded
 
@@ -83,13 +86,22 @@ When you run `./webforge init --platform=laravel`, you get:
 templates/laravel/
 ├── components/
 │   ├── seo-head.blade.php    # Meta tags, OG, Twitter cards
-│   └── json-ld.blade.php     # Structured data (Schema.org)
+│   ├── json-ld.blade.php     # Structured data (Schema.org)
+│   └── image.blade.php       # Optimized image with lazy loading
 ├── config/
 │   ├── pint.json             # Laravel Pint code style
 │   ├── phpstan.neon          # PHPStan static analysis
 │   └── seo.php               # SEO configuration
-└── scripts/
-    └── pre-commit-hook.sh    # (coming soon)
+├── public/
+│   └── robots.txt            # Search engine crawling rules
+├── views/
+│   └── sitemap.blade.php     # Dynamic XML sitemap
+├── routes/
+│   └── sitemap-route.php     # Sitemap route definition
+├── scripts/
+│   └── pre-commit            # Git pre-commit hook
+└── workflows/
+    └── ci.yml                # GitHub Actions CI workflow
 ```
 
 ## Roadmap
@@ -99,8 +111,10 @@ templates/laravel/
 - [x] PHPStan + Pint configuration
 - [x] Brain Nucleus integration
 - [x] Project audit command
-- [ ] Pre-commit hook template
-- [ ] CI/CD workflow template
+- [x] Pre-commit hook template
+- [x] CI/CD workflow template
+- [x] Optimized image component
+- [x] robots.txt + sitemap templates
 - [ ] WordPress WP-CLI scaffolding
 - [ ] Astro scaffolding
 - [ ] Template versioning

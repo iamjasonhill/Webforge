@@ -1,0 +1,35 @@
+#!/bin/sh
+# WebForge Pre-commit Hook
+# Run code quality checks before committing
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if we have any staged PHP files
+STAGED_PHP=$(git diff --cached --name-only --diff-filter=ACM | grep '\.php$' || true)
+
+if [ -z "$STAGED_PHP" ]; then
+    echo "✅ No PHP files staged, skipping checks."
+    exit 0
+fi
+
+# Run Laravel Pint on staged files only
+echo "📝 Running Pint (code style)..."
+./vendor/bin/pint --dirty
+if [ $? -ne 0 ]; then
+    echo "❌ Pint found style issues. Please fix them and try again."
+    exit 1
+fi
+
+# Re-add any files that Pint modified
+git add $STAGED_PHP
+
+# Run PHPStan
+echo "🔬 Running PHPStan (static analysis)..."
+./vendor/bin/phpstan analyse --memory-limit=2G
+if [ $? -ne 0 ]; then
+    echo "❌ PHPStan found issues. Please fix them and try again."
+    exit 1
+fi
+
+echo "✅ All checks passed!"
+exit 0

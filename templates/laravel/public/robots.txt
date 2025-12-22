@@ -1,0 +1,12 @@
+# robots.txt - WebForge Generated
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: {{ config('app.url') }}/sitemap.xml
+
+# Common directories to block
+Disallow: /admin/
+Disallow: /api/
