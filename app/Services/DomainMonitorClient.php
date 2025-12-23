@@ -14,8 +14,8 @@ class DomainMonitorClient
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('webforge.domain_monitor.url', ''), '/');
-        $this->apiKey = config('webforge.domain_monitor.api_key', '');
+        $this->baseUrl = rtrim((string) config('webforge.domain_monitor.url', ''), '/');
+        $this->apiKey = (string) config('webforge.domain_monitor.api_key', '');
         $this->timeout = (int) config('webforge.domain_monitor.timeout', 30);
     }
 

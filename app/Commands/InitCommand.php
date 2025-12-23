@@ -117,10 +117,18 @@ class InitCommand extends Command
             info('  Domain: ' . $this->domainData['domain']);
         }
 
-        if (!confirm("\nProceed with scaffolding?", true)) {
+        if (!$this->option('no-interaction') && !confirm("\nProceed with scaffolding?", true)) {
             warning('Cancelled.');
 
             return self::FAILURE;
+        }
+
+        // Create projects directory if needed
+        if (str_starts_with($path, 'projects/')) {
+            $projectDir = base_path('projects');
+            if (!is_dir($projectDir)) {
+                mkdir($projectDir, 0755, true);
+            }
         }
 
         return match ($platform) {
@@ -485,6 +493,7 @@ class InitCommand extends Command
         // Step 2: Copy config files
         info('📄 Copying configuration files...');
         $this->copyTemplate('astro/astro.config.mjs', $path . '/astro.config.mjs');
+        $this->copyTemplate('astro/tailwind.config.mjs', $path . '/tailwind.config.mjs');
         $this->copyTemplate('astro/tsconfig.json', $path . '/tsconfig.json');
         $this->copyTemplate('astro/.prettierrc', $path . '/.prettierrc');
         $this->copyTemplate('astro/eslint.config.js', $path . '/eslint.config.js');
@@ -510,6 +519,14 @@ class InitCommand extends Command
                 mkdir($pagesPath, 0755, true);
             }
             $this->copyTemplate('astro/src/pages/404.astro', $pagesPath . '/404.astro');
+            $this->copyTemplate('astro/src/pages/index.astro', $pagesPath . '/index.astro');
+
+            // Replace Title
+            if (file_exists($pagesPath . '/index.astro')) {
+                $content = file_get_contents($pagesPath . '/index.astro');
+                $content = str_replace('New Webforge Project', $name, $content);
+                file_put_contents($pagesPath . '/index.astro', $content);
+            }
 
             // Copy public files
             $this->copyTemplate('astro/public/robots.txt', $path . '/public/robots.txt');

@@ -35,8 +35,11 @@ composer global require webforge/cli
 # Interactive wizard
 ./webforge init
 
-# With options
+# With options (Laravel)
 ./webforge init --platform=laravel --name=my-site --with-brain --with-seo
+
+# With options (Astro)
+./webforge init --platform=astro --name=my-site --with-seo
 
 # See all options
 ./webforge init --help
@@ -116,6 +119,18 @@ When you run `./webforge init --platform=laravel`, you get:
 - ✅ Composer scripts (`dev`, `analyse`, `check`)
 - ✅ NPM dependencies installed
 
+### Astro Projects
+
+When you run `./webforge init --platform=astro`, you get:
+
+- ✅ Astro 5.0 + TailwindCSS project
+- ✅ SEO Layout component (Meta tags, OG, analytics)
+- ✅ Sitemap automation (`@astrojs/sitemap`)
+- ✅ ESLint + Prettier configuration
+- ✅ Deployment configs (Vercel & Netlify)
+- ✅ CI/CD workflow template
+- ✅ Custom 404 page & Robots.txt
+
 ## Template Files
 
 ```
@@ -165,7 +180,7 @@ templates/laravel/
 - [x] PWA web manifest
 - [x] Analytics component
 - [ ] WordPress WP-CLI scaffolding
-- [ ] Astro scaffolding
+- [x] Astro scaffolding
 - [ ] Template versioning
 - [ ] Publish to Packagist
 
