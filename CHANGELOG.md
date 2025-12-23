@@ -8,9 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Brain Nucleus client is now **always installed** on Laravel projects (no
+  longer opt-in)
+- Removed `--with-brain` option from init command
+
 ### Added
 
 - WordPress scaffolding (coming soon)
+- Astro npm package for Brain Nucleus (coming soon)
+- Standalone PHP client for static sites (coming soon)
 
 ---
 

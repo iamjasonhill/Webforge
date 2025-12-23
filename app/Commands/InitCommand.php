@@ -23,7 +23,6 @@ class InitCommand extends Command
         {--platform= : Platform to scaffold (laravel, wordpress, astro)}
         {--name= : Project name}
         {--path= : Path to create project (defaults to current directory)}
-        {--with-brain : Include Brain Nucleus client}
         {--with-seo : Include SEO components}
         {--skip-install : Skip composer/npm install (for testing)}
         {--from-domain : Select from Domain Monitor domains interactively}
@@ -100,10 +99,7 @@ class InitCommand extends Command
         }
 
         // Options
-        $withBrain = $this->option('with-brain') ?? confirm(
-            label: 'Include Brain Nucleus integration?',
-            default: true
-        );
+        // Brain Nucleus client is always installed for supported platforms
 
         $withSeo = $this->option('with-seo') ?? confirm(
             label: 'Include SEO components?',
@@ -114,8 +110,8 @@ class InitCommand extends Command
         info("  Platform: {$platform}");
         info("  Name: {$name}");
         info("  Path: {$path}");
-        info('  Brain: ' . ($withBrain ? 'Yes' : 'No'));
         info('  SEO: ' . ($withSeo ? 'Yes' : 'No'));
+        info('  Brain: Yes (always included)');
 
         if ($this->domainData) {
             info('  Domain: ' . $this->domainData['domain']);
@@ -128,10 +124,10 @@ class InitCommand extends Command
         }
 
         return match ($platform) {
-            'laravel' => $this->scaffoldLaravel($name, $path, $withBrain, $withSeo),
-            'astro' => $this->scaffoldAstro($name, $path, $withBrain, $withSeo),
+            'laravel' => $this->scaffoldLaravel($name, $path, $withSeo),
+            'astro' => $this->scaffoldAstro($name, $path, $withSeo),
             'static-php' => $this->scaffoldStaticPhp($name, $path, $withSeo),
-            'wordpress' => $this->scaffoldWordpress($name, $path, $withBrain, $withSeo),
+            'wordpress' => $this->scaffoldWordpress($name, $path, $withSeo),
             default => self::FAILURE,
         };
     }
@@ -225,7 +221,7 @@ class InitCommand extends Command
     }
 
 
-    private function scaffoldLaravel(string $name, string $path, bool $withBrain, bool $withSeo): int
+    private function scaffoldLaravel(string $name, string $path, bool $withSeo): int
     {
         info("\n🚀 Scaffolding Laravel project...\n");
 
@@ -270,8 +266,8 @@ class InitCommand extends Command
             );
         }
 
-        // Step 4: Install Brain client if requested
-        if ($withBrain && !$skipInstall) {
+        // Step 4: Install Brain Nucleus client (always included)
+        if (!$skipInstall) {
             spin(
                 callback: fn() => $this->executeProcess(['composer', 'require', 'brain-nucleus/client'], $path),
                 message: 'Installing Brain Nucleus client...'
@@ -353,10 +349,8 @@ class InitCommand extends Command
         info('📝 Adding composer scripts...');
         $this->addComposerScripts($path);
 
-        // Step 10: Add Brain env vars if requested
-        if ($withBrain) {
-            $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
-        }
+        // Step 10: Add Brain env vars (always included)
+        $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
 
         // Step 11: NPM install
         if (!$skipInstall) {
@@ -443,17 +437,22 @@ class InitCommand extends Command
         info("   └── css/style.css");
         info("\n🚀 Upload to any PHP host to get started!");
 
+        // TODO: Brain Nucleus Integration
+        // Once Brain provides a standalone brain-client.php file, copy it:
+        // $this->copyTemplate('static-php/brain-client.php', $path . '/brain-client.php');
+        // And add env vars to a sample config or .htaccess
+
         return self::SUCCESS;
     }
 
-    private function scaffoldWordpress(string $name, string $path, bool $withBrain, bool $withSeo): int
+    private function scaffoldWordpress(string $name, string $path, bool $withSeo): int
     {
         info("\n🚀 Scaffolding WordPress project...");
         warning('WordPress scaffolding not yet implemented. Coming soon!');
         return self::SUCCESS;
     }
 
-    private function scaffoldAstro(string $name, string $path, bool $withBrain, bool $withSeo): int
+    private function scaffoldAstro(string $name, string $path, bool $withSeo): int
     {
         info("\n🚀 Scaffolding Astro project...\n");
 
@@ -531,6 +530,14 @@ class InitCommand extends Command
 
         // Step 6: Add npm scripts
         $this->addAstroNpmScripts($path);
+
+        // TODO: Brain Nucleus Integration
+        // Once brain-nucleus npm package is published, add:
+        // spin(
+        //     callback: fn() => $this->executeProcess(['npm', 'install', '@brain-nucleus/client'], $path),
+        //     message: 'Installing Brain Nucleus client...'
+        // );
+        // And update .env.example with BRAIN_BASE_URL and BRAIN_API_KEY
 
         // Done!
         info("\n✅ Astro project scaffolded successfully!\n");
