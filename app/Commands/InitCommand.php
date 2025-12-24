@@ -480,7 +480,7 @@ class InitCommand extends Command
 
             // Install additional dependencies
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'prettier', 'prettier-plugin-astro'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro'], $path),
                 message: 'Installing dependencies...'
             );
         } else {
@@ -527,6 +527,11 @@ class InitCommand extends Command
                 $content = str_replace('New Webforge Project', $name, $content);
                 file_put_contents($pagesPath . '/index.astro', $content);
             }
+
+            // Generate dynamic README
+            $readmeTemplate = file_get_contents(__DIR__ . '/../../templates/astro/README.md');
+            $readmeContent = str_replace('{{ name }}', $name, $readmeTemplate);
+            file_put_contents($path . '/README.md', $readmeContent);
 
             // Copy dynamic robots.txt
             $this->copyTemplate('astro/src/pages/robots.txt.ts', $path . '/src/pages/robots.txt.ts');

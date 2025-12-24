@@ -1,14 +1,14 @@
 ---
 interface Props {
   type: 'WebSite' | 'Organization' | 'Article' | 'Product' | 'FAQPage' | 'LocalBusiness' | 'BreadcrumbList';
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 const { type, data = {} } = Astro.props;
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || Astro.site?.href || '';
 const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Site';
 
-function generateSchema(type: string, data: Record<string, any>) {
+function generateSchema(type: string, data: Record<string, unknown>) {
   const baseSchema = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -27,7 +27,7 @@ function generateSchema(type: string, data: Record<string, any>) {
         ...baseSchema,
         name: siteName,
         url: siteUrl,
-        logo: data.logo || '',
+        logo: (data.logo as string) || '',
         ...data,
       };
     case 'LocalBusiness':
@@ -79,19 +79,19 @@ function generateSchema(type: string, data: Record<string, any>) {
     case 'FAQPage':
       return {
         ...baseSchema,
-        mainEntity: (data.questions || []).map((q: { question: string; answer: string }) => ({
+        mainEntity: (data.faqs as any[]).map((faq: any) => ({
           '@type': 'Question',
-          name: q.question,
+          name: faq.question,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: q.answer,
+            text: faq.answer,
           },
         })),
       };
     case 'BreadcrumbList':
       return {
         ...baseSchema,
-        itemListElement: (data.items || []).map((item: { name: string; url?: string }, index: number) => ({
+        itemListElement: (data.items as any[]).map((item: { name: string; url?: string }, index: number) => ({
           '@type': 'ListItem',
           position: index + 1,
           name: item.name,
