@@ -9,9 +9,9 @@ export default [
     ignores: ["dist/", ".astro/", "node_modules/"],
   },
   {
-    rules: {
-      // Custom rules
-    },
+      rules: {
+          // Custom rules
+      },
   },
 ];
 ```

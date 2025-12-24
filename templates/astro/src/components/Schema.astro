@@ -8,7 +8,28 @@ const { type, data = {} } = Astro.props;
 const siteUrl = import.meta.env.PUBLIC_SITE_URL || Astro.site?.href || '';
 const siteName = import.meta.env.PUBLIC_SITE_NAME || 'My Site';
 
-function generateSchema(type: string, data: Record<string, unknown>) {
+interface SchemaData extends Record<string, unknown> {
+  name?: string;
+  url?: string;
+  image?: string;
+  description?: string;
+  datePublished?: string;
+  dateModified?: string;
+  author?: string;
+  headline?: string;
+  logo?: string;
+  address?: Record<string, unknown>;
+  telephone?: string;
+  openingHours?: string;
+  price?: string;
+  currency?: string;
+  availability?: string;
+  brand?: string;
+  faqs?: Array<{ question: string; answer: string }>;
+  items?: Array<{ name: string; url?: string }>;
+}
+
+function generateSchema(type: string, data: SchemaData) {
   const baseSchema = {
     '@context': 'https://schema.org',
     '@type': type,
@@ -79,7 +100,7 @@ function generateSchema(type: string, data: Record<string, unknown>) {
     case 'FAQPage':
       return {
         ...baseSchema,
-        mainEntity: (data.faqs as any[]).map((faq: any) => ({
+        mainEntity: (data.faqs || []).map((faq) => ({
           '@type': 'Question',
           name: faq.question,
           acceptedAnswer: {
@@ -91,7 +112,7 @@ function generateSchema(type: string, data: Record<string, unknown>) {
     case 'BreadcrumbList':
       return {
         ...baseSchema,
-        itemListElement: (data.items as any[]).map((item: { name: string; url?: string }, index: number) => ({
+        itemListElement: (data.items || []).map((item, index) => ({
           '@type': 'ListItem',
           position: index + 1,
           name: item.name,

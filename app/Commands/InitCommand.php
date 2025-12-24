@@ -480,7 +480,7 @@ class InitCommand extends Command
 
             // Install additional dependencies
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto'], $path),
                 message: 'Installing dependencies...'
             );
         } else {
@@ -512,6 +512,13 @@ class InitCommand extends Command
             $this->copyTemplate('astro/src/components/Schema.astro', $componentsPath . '/Schema.astro');
             $this->copyTemplate('astro/src/components/Breadcrumbs.astro', $componentsPath . '/Breadcrumbs.astro');
             $this->copyTemplate('astro/src/components/Analytics.astro', $componentsPath . '/Analytics.astro');
+
+            // Copy layouts
+            $layoutsPath = $path . '/src/layouts';
+            if (!is_dir($layoutsPath)) {
+                mkdir($layoutsPath, 0755, true);
+            }
+            $this->copyTemplate('astro/src/layouts/Layout.astro', $layoutsPath . '/Layout.astro');
 
             // Copy pages
             $pagesPath = $path . '/src/pages';
