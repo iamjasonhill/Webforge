@@ -528,8 +528,11 @@ class InitCommand extends Command
                 file_put_contents($pagesPath . '/index.astro', $content);
             }
 
+            // Copy dynamic robots.txt
+            $this->copyTemplate('astro/src/pages/robots.txt.ts', $path . '/src/pages/robots.txt.ts');
+
             // Copy public files
-            $this->copyTemplate('astro/public/robots.txt', $path . '/public/robots.txt');
+            $this->copyTemplate('astro/public/manifest.json', $path . '/public/manifest.json');
         }
 
         // Step 4: Copy deployment configs
