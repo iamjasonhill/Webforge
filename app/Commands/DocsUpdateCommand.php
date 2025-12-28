@@ -32,6 +32,7 @@ class DocsUpdateCommand extends Command
      */
     private array $docs = [
         'PROJECT-CHECKLIST.md' => 'astro/docs/PROJECT-CHECKLIST.md',
+        'MASTER-PROJECT-CHECKLIST.md' => 'astro/docs/MASTER-PROJECT-CHECKLIST.md',
     ];
 
     public function handle(): int
