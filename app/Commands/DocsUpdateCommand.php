@@ -3,13 +3,11 @@
 namespace App\Commands;
 
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DocsUpdateCommand extends Command
@@ -18,14 +16,22 @@ class DocsUpdateCommand extends Command
         {--path= : Path to the project (defaults to current directory)}
         {--force : Overwrite existing files without confirmation}';
 
-    protected $description = 'Update project documentation from master source';
+    protected $description = 'Update project documentation from Webforge templates';
+
+    private string $templatesPath;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->templatesPath = base_path('templates');
+    }
 
     /**
-     * Master documentation sources.
-     * Add new documents here as they become available.
+     * Documentation files to sync.
+     * Maps destination filename => template path
      */
-    private array $masterDocs = [
-        'PROJECT-CHECKLIST.md' => 'https://raw.githubusercontent.com/iamjasonhill/thebrain/main/brain-client/web/PROJECT-CHECKLIST.md',
+    private array $docs = [
+        'PROJECT-CHECKLIST.md' => 'astro/docs/PROJECT-CHECKLIST.md',
     ];
 
     public function handle(): int
@@ -60,9 +66,16 @@ class DocsUpdateCommand extends Command
         $updated = 0;
         $failed = 0;
 
-        foreach ($this->masterDocs as $filename => $url) {
+        foreach ($this->docs as $filename => $templatePath) {
             $destPath = $docsPath . '/' . $filename;
+            $sourcePath = $this->templatesPath . '/' . $templatePath;
             $exists = file_exists($destPath);
+
+            if (!file_exists($sourcePath)) {
+                error("  ✗ Template not found: {$templatePath}");
+                $failed++;
+                continue;
+            }
 
             if ($exists && !$this->option('force')) {
                 if (!confirm("Overwrite existing {$filename}?", true)) {
@@ -71,18 +84,16 @@ class DocsUpdateCommand extends Command
                 }
             }
 
-            $result = spin(
-                callback: fn() => $this->fetchAndSave($url, $destPath),
-                message: "Fetching {$filename}..."
-            );
+            // Copy from template
+            $content = file_get_contents($sourcePath);
 
-            if ($result) {
-                info("  ✓ Updated: {$filename}");
-                $updated++;
-            } else {
-                error("  ✗ Failed: {$filename}");
-                $failed++;
-            }
+            // Add sync timestamp
+            $timestamp = now()->format('Y-m-d H:i:s');
+            $content .= "\n\n---\n_Last synced: {$timestamp} via `webforge docs:update`_\n";
+
+            file_put_contents($destPath, $content);
+            info("  ✓ Updated: {$filename}");
+            $updated++;
         }
 
         info("\n" . ($updated > 0 ? "✅ Updated {$updated} document(s)" : "No documents updated"));
@@ -91,29 +102,9 @@ class DocsUpdateCommand extends Command
             warning("{$failed} document(s) failed to update");
         }
 
+        info("\n💡 Tip: Update Webforge to get latest templates: cd " . base_path() . " && git pull");
+
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
-
-    private function fetchAndSave(string $url, string $destPath): bool
-    {
-        try {
-            $response = Http::timeout(30)->get($url);
-
-            if (!$response->successful()) {
-                return false;
-            }
-
-            $content = $response->body();
-
-            // Add update timestamp
-            $timestamp = now()->format('Y-m-d H:i:s');
-            $content .= "\n\n---\n_Last synced: {$timestamp} via `webforge docs:update`_\n";
-
-            file_put_contents($destPath, $content);
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
-    }
 }
+
