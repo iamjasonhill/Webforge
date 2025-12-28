@@ -163,7 +163,7 @@ PUBLIC_GA_ID=G-XXXXXXXXXX
 
 ## Phase 6: LLM Search Readiness
 
-> Make your site AI-friendly for ChatGPT, Perplexity, Claude, etc.
+> Make your site AI-friendly for ChatGPT, Perplexity, Claude, Gemini, etc.
 
 ### llms.txt File
 
@@ -184,13 +184,59 @@ PUBLIC_GA_ID=G-XXXXXXXXXX
   - Citation-ready sentences
   - Enforcement checklist
 
-### Content Optimization for AI
+### Company Identity (Explicit)
 
-- [ ] Clear, factual content (avoid fluff)
-- [ ] FAQ sections with schema markup
-- [ ] Comparison tables with structured data
-- [ ] Definitive answers to common questions
-- [ ] Citation-worthy statistics
+- [ ] Company name clearly stated
+- [ ] ABN/ACN displayed (if applicable)
+- [ ] Physical region served
+- [ ] Years operating (if real)
+- [ ] Contact method visible
+
+### Content Structure for AI
+
+- [ ] Use lists and tables instead of prose walls
+- [ ] Use explicit Q&A patterns (`<h2>Question?</h2><p>Answer.</p>`)
+- [ ] Keep sections short (≤800 tokens, self-contained)
+- [ ] Use `<dl>` definition lists for key terms
+- [ ] Document limitations/exceptions explicitly
+
+### Machine-Readable Data
+
+- [ ] Add hidden JSON summary blocks on key pages:
+  ```html
+  <script type="application/json" id="page-facts">
+      {
+          "service": "Service Name",
+          "coverage": "Australia-wide",
+          "key_fact": "Specific number or claim"
+      }
+  </script>
+  ```
+- [ ] Every page has appropriate Schema.org markup
+
+### Schema Types Required
+
+> Use `Schema.astro` component
+
+- [ ] `WebSite` (homepage)
+- [ ] `Organization` or `LocalBusiness` (homepage)
+- [ ] `Article` or `Service` (content pages)
+- [ ] `FAQPage` (any page with FAQ section)
+- [ ] `HowTo` (process/guide pages)
+- [ ] `BreadcrumbList` (all internal pages)
+
+### Reference Pages
+
+- [ ] Create `/guides/` or `/learn/` section for authority content
+- [ ] Reference pages should define terms, explain processes, state exceptions
+- [ ] Avoid sales language on reference pages
+
+### Citation-Ready Content
+
+- [ ] Facts stated in quotable sentences
+- [ ] Specific numbers (not "up to X%" or "significant")
+- [ ] Clear, unambiguous claims
+- [ ] FAQ sections with FAQPage schema
 
 ---
 
