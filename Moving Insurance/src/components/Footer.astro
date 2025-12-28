@@ -1,0 +1,101 @@
+---
+const currentYear = new Date().getFullYear();
+
+const footerLinks = {
+  services: [
+    { href: '/services#full-value', label: 'Full Value Protection' },
+    { href: '/services#declared-value', label: 'Declared Value' },
+    { href: '/services#transit', label: 'Transit Insurance' },
+    { href: '/services#storage', label: 'Storage Coverage' },
+  ],
+  company: [
+    { href: '/about', label: 'About Us' },
+    { href: '/contact', label: 'Contact' },
+    { href: '/quote', label: 'Get a Quote' },
+  ],
+  legal: [
+    { href: '/privacy', label: 'Privacy Policy' },
+    { href: '/terms', label: 'Terms of Service' },
+    { href: '/pds', label: 'Product Disclosure' },
+  ],
+};
+---
+
+<footer class="bg-brand-dark text-gray-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <!-- Brand -->
+      <div>
+        <div class="flex items-center space-x-2 mb-4">
+          <div class="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <span class="font-heading font-bold text-xl text-white">Moving Insurance</span>
+        </div>
+        <p class="text-sm leading-relaxed">
+          Protecting your belongings during every move. Comprehensive insurance coverage for peace of mind.
+        </p>
+      </div>
+
+      <!-- Services -->
+      <div>
+        <h3 class="font-heading font-semibold text-white mb-4">Services</h3>
+        <ul class="space-y-2">
+          {footerLinks.services.map(({ href, label }) => (
+            <li>
+              <a href={href} class="text-sm hover:text-brand-accent transition-colors">
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <h3 class="font-heading font-semibold text-white mb-4">Company</h3>
+        <ul class="space-y-2">
+          {footerLinks.company.map(({ href, label }) => (
+            <li>
+              <a href={href} class="text-sm hover:text-brand-accent transition-colors">
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Legal -->
+      <div>
+        <h3 class="font-heading font-semibold text-white mb-4">Legal</h3>
+        <ul class="space-y-2">
+          {footerLinks.legal.map(({ href, label }) => (
+            <li>
+              <a href={href} class="text-sm hover:text-brand-accent transition-colors">
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-sm">
+        &copy; {currentYear} Moving Insurance. All rights reserved.
+      </p>
+      <div class="flex space-x-4 mt-4 md:mt-0">
+        <a href="tel:1300000000" class="text-sm hover:text-brand-accent transition-colors">
+          1300 000 000
+        </a>
+        <span class="text-gray-600">|</span>
+        <a href="mailto:info@movinginsurance.com.au" class="text-sm hover:text-brand-accent transition-colors">
+          info@movinginsurance.com.au
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

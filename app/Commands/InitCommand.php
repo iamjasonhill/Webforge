@@ -81,7 +81,7 @@ class InitCommand extends Command
         );
 
         // Get path
-        $defaultPath = getcwd() . '/' . $name;
+        $defaultPath = '/Users/jasonhill/Projects/Websites Control Folder/' . $name;
         $path = $this->option('path') ?? text(
             label: 'Where should we create the project?',
             default: $defaultPath,
@@ -560,7 +560,15 @@ class InitCommand extends Command
         }
         $this->copyTemplate('astro/.github/workflows/ci.yml', $workflowsPath . '/ci.yml');
 
-        // Step 6: Add npm scripts
+        // Step 6: Copy project documentation
+        info('📚 Setting up project docs...');
+        $docsPath = $path . '/docs';
+        if (!is_dir($docsPath)) {
+            mkdir($docsPath, 0755, true);
+        }
+        $this->copyTemplate('astro/docs/PROJECT-CHECKLIST.md', $docsPath . '/PROJECT-CHECKLIST.md');
+
+        // Step 7: Add npm scripts
         $this->addAstroNpmScripts($path);
 
         // TODO: Brain Nucleus Integration

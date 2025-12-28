@@ -1,0 +1,28 @@
+{
+    "name": "users-jasonhill-projects-laravel-projects-webforge-moving-insurance",
+    "type": "module",
+    "version": "0.0.1",
+    "scripts": {
+        "dev": "astro dev",
+        "build": "astro build",
+        "preview": "astro preview",
+        "astro": "astro",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "dependencies": {
+        "@astrojs/sitemap": "^3.6.0",
+        "@astrojs/tailwind": "^6.0.2",
+        "@fontsource/inter": "^5.2.8",
+        "@fontsource/poppins": "^5.2.7",
+        "@fontsource/roboto": "^5.2.9",
+        "astro": "^5.16.6",
+        "eslint": "^9.39.2",
+        "eslint-plugin-astro": "^1.5.0",
+        "prettier": "^3.7.4",
+        "prettier-plugin-astro": "^0.14.1",
+        "typescript-eslint": "^8.50.1"
+    }
+}
