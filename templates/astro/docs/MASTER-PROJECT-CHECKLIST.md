@@ -176,6 +176,14 @@ PUBLIC_GA_ID=G-XXXXXXXXXX
   - Content guidelines for AI
   - Contact information
 
+### Terminology Guide
+
+- [ ] Create `docs/TERMINOLOGY.md` with:
+  - Canonical terms for key concepts
+  - "Never use" alternatives to avoid
+  - Citation-ready sentences
+  - Enforcement checklist
+
 ### Content Optimization for AI
 
 - [ ] Clear, factual content (avoid fluff)
