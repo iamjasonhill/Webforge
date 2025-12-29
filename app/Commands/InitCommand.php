@@ -480,7 +480,7 @@ class InitCommand extends Command
 
             // Install additional dependencies
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto', 'husky', '@tailwindcss/typography', 'sharp'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto', 'husky', '@tailwindcss/typography', 'sharp', 'astro-icon', 'vitest', 'happy-dom'], $path),
                 message: 'Installing dependencies...'
             );
         } else {
@@ -497,6 +497,7 @@ class InitCommand extends Command
         $this->copyTemplate('astro/tsconfig.json', $path . '/tsconfig.json');
         $this->copyTemplate('astro/.prettierrc', $path . '/.prettierrc');
         $this->copyTemplate('astro/eslint.config.js', $path . '/eslint.config.js');
+        $this->copyTemplate('astro/vitest.config.ts', $path . '/vitest.config.ts');
         $this->copyTemplate('astro/.env.example', $path . '/.env.example');
 
         // Step 3: Copy SEO components if requested
@@ -605,6 +606,8 @@ class InitCommand extends Command
         $package['scripts']['format'] = 'prettier --write .';
         $package['scripts']['format:check'] = 'prettier --check .';
         $package['scripts']['prepare'] = 'husky';
+        $package['scripts']['test'] = 'vitest';
+        $package['scripts']['test:run'] = 'vitest run';
 
         file_put_contents($packagePath, json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         info("  ✓ Added npm scripts");

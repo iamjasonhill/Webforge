@@ -76,6 +76,23 @@ import myImage from '../assets/my_image.png';
 <Image src={myImage} alt="A description of my image." />
 ```
 
+## Icons
+
+- **Astro Icon**: Use the `astro-icon` package for easy SVG icon management.
+- **Usage**:
+  ```astro
+  ---
+  import { Icon } from 'astro-icon/components';
+  ---
+  <!-- Load from src/icons/ -->
+  <Icon name="logo" class="w-8 h-8" />
+  ```
+
+## Testing
+
+- **Vitest**: Unit testing is configured with `vitest` and `happy-dom`.
+- **Run Tests**: `npm run test` or `npm run test:run` for CI.
+
 ## Styling
 
 - **Tailwind Typography**: The `@tailwindcss/typography` plugin is installed.
