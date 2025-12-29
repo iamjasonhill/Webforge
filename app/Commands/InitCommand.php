@@ -480,7 +480,7 @@ class InitCommand extends Command
 
             // Install additional dependencies
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto', 'husky', '@tailwindcss/typography'], $path),
                 message: 'Installing dependencies...'
             );
         } else {
@@ -604,6 +604,7 @@ class InitCommand extends Command
         $package['scripts']['lint:fix'] = 'eslint . --fix';
         $package['scripts']['format'] = 'prettier --write .';
         $package['scripts']['format:check'] = 'prettier --check .';
+        $package['scripts']['prepare'] = 'husky';
 
         file_put_contents($packagePath, json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
         info("  ✓ Added npm scripts");

@@ -55,3 +55,14 @@ You can customize these in `tailwind.config.mjs` to match your brand identity.
 - **Robots.txt**: Dynamically generated to point to your sitemap.
 - **PWA Ready**: `manifest.json` included.
 - **Structured Data**: Use the `<Schema />` component for JSON-LD.
+
+## Quality Assurance
+
+- **Husky**: Pre-commit hooks are configured to run `npm run lint` and
+  `npm run format:check` before every commit. This ensures code quality and
+  consistency.
+
+## Styling
+
+- **Tailwind Typography**: The `@tailwindcss/typography` plugin is installed.
+  Use the `prose` class to style markdown content beautifully.
