@@ -480,7 +480,7 @@ class InitCommand extends Command
 
             // Install additional dependencies
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto', 'husky', '@tailwindcss/typography'], $path),
+                callback: fn() => $this->executeProcess(['npm', 'install', '@astrojs/tailwind', '@astrojs/sitemap', 'eslint', 'eslint-plugin-astro', 'typescript-eslint', 'prettier', 'prettier-plugin-astro', '@fontsource/roboto', 'husky', '@tailwindcss/typography', 'sharp'], $path),
                 message: 'Installing dependencies...'
             );
         } else {

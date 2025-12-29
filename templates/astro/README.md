@@ -62,6 +62,20 @@ You can customize these in `tailwind.config.mjs` to match your brand identity.
   `npm run format:check` before every commit. This ensures code quality and
   consistency.
 
+## Images
+
+- **Optimization**: The `sharp` image service is pre-installed for
+  high-performance image optimization.
+- **Usage**: Use the `<Image />` component for optimized images.
+
+```astro
+---
+import { Image } from 'astro:assets';
+import myImage from '../assets/my_image.png';
+---
+<Image src={myImage} alt="A description of my image." />
+```
+
 ## Styling
 
 - **Tailwind Typography**: The `@tailwindcss/typography` plugin is installed.
