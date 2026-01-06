@@ -107,7 +107,14 @@
 
 > ⚠️ Do this EARLY - don't ship with default Astro rocket!
 
-### Generate Favicons (when logo ready)
+### Logo Creation & Approval
+
+- [ ] Check for existing `logo.svg`
+- [ ] **IF MISSING:** Create draft/placeholder SVG using brand colors
+- [ ] **APPROVAL REQUIRED:** Show logo to stakeholder for sign-off
+- [ ] Save approved logo to `/public/logo.svg`
+
+### Generate Favicons (After Approval)
 
 ```bash
 cd public

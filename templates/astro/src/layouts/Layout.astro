@@ -1,5 +1,6 @@
 ---
 import SEO from '../components/SEO.astro';
+import BrainAnalytics from '../components/BrainAnalytics.astro';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
@@ -22,6 +23,7 @@ const { title, description, image, type, noindex } = Astro.props;
   type={type} 
   noindex={noindex}
 >
+  <BrainAnalytics />
   <div class="font-sans antialiased text-slate-800 bg-slate-50 min-h-screen flex flex-col">
     <slot name="header" />
     <main class="flex-grow">

@@ -345,7 +345,22 @@ class InitCommand extends Command
         }
         $this->copyTemplate('laravel/workflows/ci.yml', $workflowsPath . '/ci.yml');
 
-        // Step 8: Copy pre-commit hook
+        // Step 8: Initialize git repository (needed for pre-commit hook)
+        info('🔧 Initializing git repository...');
+        if (!is_dir($path . '/.git')) {
+            spin(
+                callback: fn() => $this->executeProcess(['git', 'init'], $path),
+                message: 'Creating git repository...'
+            );
+        }
+
+        // Step 9: Append PHPStan cache to .gitignore
+        $gitignoreAdditions = file_get_contents($this->templatesPath . '/laravel/config/gitignore-additions.txt');
+        if ($gitignoreAdditions !== false) {
+            $this->appendToFile($path . '/.gitignore', "\n" . $gitignoreAdditions);
+        }
+
+        // Step 10: Copy pre-commit hook
         info('🪝 Setting up pre-commit hook...');
         $hooksPath = $path . '/.git/hooks';
         if (is_dir($hooksPath)) {
@@ -353,14 +368,14 @@ class InitCommand extends Command
             chmod($hooksPath . '/pre-commit', 0755);
         }
 
-        // Step 9: Add composer scripts
+        // Step 11: Add composer scripts
         info('📝 Adding composer scripts...');
         $this->addComposerScripts($path);
 
-        // Step 10: Add Brain env vars (always included)
+        // Step 12: Add Brain env vars (always included)
         $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
 
-        // Step 11: NPM install
+        // Step 13: NPM install
         if (!$skipInstall) {
             spin(
                 callback: fn() => $this->executeProcess(['npm', 'install'], $path),
@@ -424,9 +439,19 @@ class InitCommand extends Command
 
         // Update config with project name
         $configPath = $path . '/config.php';
-        $config = file_get_contents($configPath);
-        $config = str_replace("'My Site'", "'" . addslashes($name) . "'", $config);
-        file_put_contents($configPath, $config);
+        try {
+            if (file_exists($configPath)) {
+                $config = file_get_contents($configPath);
+                if ($config !== false) {
+                    $config = str_replace("'My Site'", "'" . addslashes($name) . "'", $config);
+                    if (file_put_contents($configPath, $config) === false) {
+                        warning("  ⚠ Failed to update config.php with project name");
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            warning("  ⚠ Error updating config.php: " . $e->getMessage());
+        }
 
         // Done!
         info("\n✅ Static PHP project scaffolded successfully!\n");
@@ -500,53 +525,69 @@ class InitCommand extends Command
         $this->copyTemplate('astro/vitest.config.ts', $path . '/vitest.config.ts');
         $this->copyTemplate('astro/.env.example', $path . '/.env.example');
 
-        // Step 3: Copy SEO components if requested
-        if ($withSeo) {
-            info('🔍 Setting up SEO components...');
+        // Add Brain env vars to .env.example (always included)
+        $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus Analytics\nPUBLIC_BRAIN_URL=\nPUBLIC_BRAIN_KEY=\n");
 
-            $componentsPath = $path . '/src/components';
-            if (!is_dir($componentsPath)) {
-                mkdir($componentsPath, 0755, true);
+        // Step 3: Copy source files
+        info('📂 Copying project source files...');
+
+        $sourceSrc = $this->templatesPath . '/astro/src';
+        $destSrc = $path . '/src';
+
+        if (!File::isDirectory($sourceSrc)) {
+            warning("  ⚠ Template src directory not found: {$sourceSrc}");
+        } else {
+            try {
+                File::copyDirectory($sourceSrc, $destSrc);
+                info("  ✓ Copied src directory structure");
+            } catch (\Exception $e) {
+                error("  ✗ Failed to copy src directory: " . $e->getMessage());
             }
-
-            $this->copyTemplate('astro/src/components/SEO.astro', $componentsPath . '/SEO.astro');
-            $this->copyTemplate('astro/src/components/Schema.astro', $componentsPath . '/Schema.astro');
-            $this->copyTemplate('astro/src/components/Breadcrumbs.astro', $componentsPath . '/Breadcrumbs.astro');
-            $this->copyTemplate('astro/src/components/Analytics.astro', $componentsPath . '/Analytics.astro');
-
-            // Copy layouts
-            $layoutsPath = $path . '/src/layouts';
-            if (!is_dir($layoutsPath)) {
-                mkdir($layoutsPath, 0755, true);
-            }
-            $this->copyTemplate('astro/src/layouts/Layout.astro', $layoutsPath . '/Layout.astro');
-
-            // Copy pages
-            $pagesPath = $path . '/src/pages';
-            if (!is_dir($pagesPath)) {
-                mkdir($pagesPath, 0755, true);
-            }
-            $this->copyTemplate('astro/src/pages/404.astro', $pagesPath . '/404.astro');
-            $this->copyTemplate('astro/src/pages/index.astro', $pagesPath . '/index.astro');
-
-            // Replace Title
-            if (file_exists($pagesPath . '/index.astro')) {
-                $content = file_get_contents($pagesPath . '/index.astro');
-                $content = str_replace('New Webforge Project', $name, $content);
-                file_put_contents($pagesPath . '/index.astro', $content);
-            }
-
-            // Generate dynamic README
-            $readmeTemplate = file_get_contents(__DIR__ . '/../../templates/astro/README.md');
-            $readmeContent = str_replace('{{ name }}', $name, $readmeTemplate);
-            file_put_contents($path . '/README.md', $readmeContent);
-
-            // Copy dynamic robots.txt
-            $this->copyTemplate('astro/src/pages/robots.txt.ts', $path . '/src/pages/robots.txt.ts');
-
-            // Copy public files
-            $this->copyTemplate('astro/public/manifest.json', $path . '/public/manifest.json');
         }
+
+        // Copy Brain Analytics component (always included)
+        $this->copyTemplate('astro/src/components/BrainAnalytics.astro', $path . '/src/components/BrainAnalytics.astro');
+
+        // Replace Project Name in index.astro
+        $indexPath = $destSrc . '/pages/index.astro';
+        if (file_exists($indexPath)) {
+            try {
+                $content = file_get_contents($indexPath);
+                if ($content !== false) {
+                    $content = str_replace('New Webforge Project', $name, $content);
+                    if (file_put_contents($indexPath, $content) === false) {
+                        warning("  ⚠ Failed to update project name in index.astro");
+                    }
+                }
+            } catch (\Exception $e) {
+                warning("  ⚠ Error updating index.astro: " . $e->getMessage());
+            }
+        }
+
+        // Generate dynamic README
+        try {
+            $readmeTemplatePath = __DIR__ . '/../../templates/astro/README.md';
+            if (file_exists($readmeTemplatePath)) {
+                $readmeTemplate = file_get_contents($readmeTemplatePath);
+                if ($readmeTemplate !== false) {
+                    $readmeContent = str_replace('{{ name }}', $name, $readmeTemplate);
+                    if (file_put_contents($path . '/README.md', $readmeContent) === false) {
+                        warning("  ⚠ Failed to create README.md");
+                    }
+                }
+            } else {
+                warning("  ⚠ README template not found: {$readmeTemplatePath}");
+            }
+        } catch (\Exception $e) {
+            warning("  ⚠ Error creating README: " . $e->getMessage());
+        }
+
+        // Copy dynamic robots.txt
+        // (Already copied via recursive src copy if it exists in templates/astro/src/pages)
+
+        // Copy public files
+        $this->copyTemplate('astro/public/manifest.json', $path . '/public/manifest.json');
+        $this->copyTemplate('astro/public/brain-analytics.js', $path . '/public/brain-analytics.js');
 
         // Step 4: Copy deployment configs
         info('🚀 Setting up deployment configs...');
@@ -572,13 +613,11 @@ class InitCommand extends Command
         // Step 7: Add npm scripts
         $this->addAstroNpmScripts($path);
 
-        // TODO: Brain Nucleus Integration
-        // Once brain-nucleus npm package is published, add:
-        // spin(
-        //     callback: fn() => $this->executeProcess(['npm', 'install', '@brain-nucleus/client'], $path),
-        //     message: 'Installing Brain Nucleus client...'
-        // );
-        // And update .env.example with BRAIN_BASE_URL and BRAIN_API_KEY
+        // Brain Nucleus Analytics is included via:
+        // - brain-analytics.js (copied to public/)
+        // - BrainAnalytics.astro component (copied to src/components/)
+        // - Layout.astro includes <BrainAnalytics />
+        // - .env.example includes PUBLIC_BRAIN_URL and PUBLIC_BRAIN_KEY
 
         // Done!
         info("\n✅ Astro project scaffolded successfully!\n");
@@ -596,54 +635,124 @@ class InitCommand extends Command
         $packagePath = $path . '/package.json';
 
         if (!file_exists($packagePath)) {
+            warning("  ⚠ package.json not found: {$packagePath}");
             return;
         }
 
-        $package = json_decode(file_get_contents($packagePath), true);
+        try {
+            $content = file_get_contents($packagePath);
+            if ($content === false) {
+                error("  ✗ Failed to read package.json");
+                return;
+            }
 
-        $package['scripts']['lint'] = 'eslint .';
-        $package['scripts']['lint:fix'] = 'eslint . --fix';
-        $package['scripts']['format'] = 'prettier --write .';
-        $package['scripts']['format:check'] = 'prettier --check .';
-        $package['scripts']['prepare'] = 'husky';
-        $package['scripts']['test'] = 'vitest';
-        $package['scripts']['test:run'] = 'vitest run';
+            $package = json_decode($content, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error("  ✗ Failed to parse package.json: " . json_last_error_msg());
+                return;
+            }
 
-        file_put_contents($packagePath, json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
-        info("  ✓ Added npm scripts");
+            if (!isset($package['scripts'])) {
+                $package['scripts'] = [];
+            }
+
+            $package['scripts']['lint'] = 'eslint .';
+            $package['scripts']['lint:fix'] = 'eslint . --fix';
+            $package['scripts']['format'] = 'prettier --write .';
+            $package['scripts']['format:check'] = 'prettier --check .';
+            $package['scripts']['prepare'] = 'husky';
+            $package['scripts']['test'] = 'vitest';
+            $package['scripts']['test:run'] = 'vitest run';
+
+            $json = json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+            if ($json === false) {
+                error("  ✗ Failed to encode package.json: " . json_last_error_msg());
+                return;
+            }
+
+            if (file_put_contents($packagePath, $json) === false) {
+                error("  ✗ Failed to write package.json");
+                return;
+            }
+
+            info("  ✓ Added npm scripts");
+        } catch (\Exception $e) {
+            error("  ✗ Error adding npm scripts: " . $e->getMessage());
+        }
     }
 
     private function executeProcess(array $command, ?string $cwd = null): bool
     {
-        $process = new Process($command, $cwd);
-        $process->setTimeout(300); // 5 minutes
-        $process->run();
+        try {
+            $process = new Process($command, $cwd);
+            $process->setTimeout(300); // 5 minutes
+            $process->run();
 
-        return $process->isSuccessful();
+            if (!$process->isSuccessful()) {
+                $errorOutput = $process->getErrorOutput();
+                $output = $process->getOutput();
+
+                warning("Command failed: " . implode(' ', $command));
+                if (!empty($errorOutput)) {
+                    warning("Error: " . trim($errorOutput));
+                }
+                if (!empty($output) && empty($errorOutput)) {
+                    warning("Output: " . trim($output));
+                }
+
+                return false;
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            warning("Exception running command: " . $e->getMessage());
+            return false;
+        }
     }
 
     private function copyTemplate(string $templatePath, string $destPath): void
     {
         $sourcePath = $this->templatesPath . '/' . $templatePath;
 
-        if (file_exists($sourcePath)) {
+        if (!file_exists($sourcePath)) {
+            warning("  ⚠ Template not found: {$templatePath}");
+            return;
+        }
+
+        try {
             // Ensure directory exists
             $destDir = dirname($destPath);
             if (!is_dir($destDir)) {
-                mkdir($destDir, 0755, true);
+                if (!mkdir($destDir, 0755, true)) {
+                    error("  ✗ Failed to create directory: {$destDir}");
+                    return;
+                }
             }
 
-            copy($sourcePath, $destPath);
+            if (!copy($sourcePath, $destPath)) {
+                error("  ✗ Failed to copy template: {$templatePath} to {$destPath}");
+                return;
+            }
+
             info("  ✓ Created: " . basename($destPath));
-        } else {
-            warning("  ⚠ Template not found: {$templatePath}");
+        } catch (\Exception $e) {
+            error("  ✗ Error copying template {$templatePath}: " . $e->getMessage());
         }
     }
 
     private function appendToFile(string $filePath, string $content): void
     {
-        if (file_exists($filePath)) {
-            file_put_contents($filePath, $content, FILE_APPEND);
+        if (!file_exists($filePath)) {
+            warning("  ⚠ File not found for appending: {$filePath}");
+            return;
+        }
+
+        try {
+            if (file_put_contents($filePath, $content, FILE_APPEND) === false) {
+                error("  ✗ Failed to append to file: {$filePath}");
+            }
+        } catch (\Exception $e) {
+            error("  ✗ Error appending to file {$filePath}: " . $e->getMessage());
         }
     }
 
@@ -652,29 +761,54 @@ class InitCommand extends Command
         $composerPath = $path . '/composer.json';
 
         if (!file_exists($composerPath)) {
+            warning("  ⚠ composer.json not found: {$composerPath}");
             return;
         }
 
-        $composer = json_decode(file_get_contents($composerPath), true);
+        try {
+            $content = file_get_contents($composerPath);
+            if ($content === false) {
+                error("  ✗ Failed to read composer.json");
+                return;
+            }
 
-        $composer['scripts']['dev'] = [
-            'Composer\\Config::disableProcessTimeout',
-            'npx concurrently -c "#93c5fd,#c4b5fd,#fb7185,#fdba74" "php artisan serve" "php artisan queue:listen --tries=1" "php artisan pail --timeout=0" "npm run dev" --names=server,queue,logs,vite --kill-others'
-        ];
+            $composer = json_decode($content, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error("  ✗ Failed to parse composer.json: " . json_last_error_msg());
+                return;
+            }
 
-        $composer['scripts']['analyse'] = [
-            './vendor/bin/phpstan analyse --memory-limit=2G'
-        ];
+            $composer['scripts']['dev'] = [
+                'Composer\\Config::disableProcessTimeout',
+                'npx concurrently -c "#93c5fd,#c4b5fd,#fb7185,#fdba74" "php artisan serve" "php artisan queue:listen --tries=1" "php artisan pail --timeout=0" "npm run dev" --names=server,queue,logs,vite --kill-others'
+            ];
 
-        $composer['scripts']['check'] = [
-            '@php artisan config:clear --ansi',
-            './vendor/bin/pint --test',
-            './vendor/bin/phpstan analyse --memory-limit=2G',
-            '@php artisan test'
-        ];
+            $composer['scripts']['analyse'] = [
+                './vendor/bin/phpstan analyse --memory-limit=2G'
+            ];
 
-        file_put_contents($composerPath, json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n");
-        info("  ✓ Added composer scripts");
+            $composer['scripts']['check'] = [
+                '@php artisan config:clear --ansi',
+                './vendor/bin/pint --test',
+                './vendor/bin/phpstan analyse --memory-limit=2G',
+                '@php artisan test'
+            ];
+
+            $json = json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
+            if ($json === false) {
+                error("  ✗ Failed to encode composer.json: " . json_last_error_msg());
+                return;
+            }
+
+            if (file_put_contents($composerPath, $json) === false) {
+                error("  ✗ Failed to write composer.json");
+                return;
+            }
+
+            info("  ✓ Added composer scripts");
+        } catch (\Exception $e) {
+            error("  ✗ Error adding composer scripts: " . $e->getMessage());
+        }
     }
 
     public function schedule(Schedule $schedule): void
