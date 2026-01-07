@@ -286,6 +286,7 @@ class InitCommand extends Command
         info('📄 Copying configuration files...');
         $this->copyTemplate('laravel/config/pint.json', $path . '/pint.json');
         $this->copyTemplate('laravel/config/phpstan.neon', $path . '/phpstan.neon');
+        $this->copyTemplate('laravel/config/phpstan-baseline.neon', $path . '/phpstan-baseline.neon');
 
         // Step 6: Copy SEO components if requested
         if ($withSeo) {
@@ -337,15 +338,48 @@ class InitCommand extends Command
             $this->appendToFile($path . '/.env.example', "\n# Analytics\nGOOGLE_ANALYTICS_ID=\n");
         }
 
-        // Step 7: Copy CI/CD workflow
+        // Step 7: Copy CI/CD workflow & Dependabot
         info('🔧 Setting up CI/CD...');
         $workflowsPath = $path . '/.github/workflows';
         if (!is_dir($workflowsPath)) {
             mkdir($workflowsPath, 0755, true);
         }
-        $this->copyTemplate('laravel/workflows/ci.yml', $workflowsPath . '/ci.yml');
+        $this->copyTemplate('laravel/.github/workflows/ci.yml', $workflowsPath . '/ci.yml');
+        $this->copyTemplate('laravel/.github/dependabot.yml', $path . '/.github/dependabot.yml');
 
-        // Step 8: Initialize git repository (needed for pre-commit hook)
+        // Step 8: Copy Documentation
+        info('📚 Setting up project documentation...');
+        $docs = ['CONTRIBUTING.md', 'CHANGELOG.md', 'SECURITY.md', 'README.md'];
+        foreach ($docs as $doc) {
+            $this->copyTemplate('laravel/' . $doc, $path . '/' . $doc);
+        }
+        
+        // Replace placeholders in docs and config
+        $filesToProcess = [
+            'CONTRIBUTING.md', 'CHANGELOG.md', 'SECURITY.md', 'README.md', 
+            '.github/dependabot.yml'
+        ];
+        
+        $replacements = [
+            '{{PROJECT_NAME}}' => $name,
+            '{{REPO_NAME}}' => strtolower(str_replace(' ', '-', $name)),
+            '{{GITHUB_USERNAME}}' => 'iamjasonhill',
+            '{{AUTHOR_EMAIL}}' => 'jason@example.com',
+            '{{CURRENT_DATE}}' => date('Y-m-d'),
+        ];
+
+        foreach ($filesToProcess as $file) {
+            $filePath = $path . '/' . $file;
+            if (file_exists($filePath)) {
+                $content = file_get_contents($filePath);
+                if ($content !== false) {
+                    $content = str_replace(array_keys($replacements), array_values($replacements), $content);
+                    file_put_contents($filePath, $content);
+                }
+            }
+        }
+
+        // Step 9: Initialize git repository (needed for pre-commit hook)
         info('🔧 Initializing git repository...');
         if (!is_dir($path . '/.git')) {
             spin(
@@ -380,6 +414,10 @@ class InitCommand extends Command
             spin(
                 callback: fn() => $this->executeProcess(['npm', 'install'], $path),
                 message: 'Installing NPM dependencies...'
+            );
+            spin(
+                callback: fn() => $this->executeProcess(['npm', 'install', 'concurrently', '--save-dev'], $path),
+                message: 'Installing concurrently...'
             );
         }
 
@@ -777,6 +815,15 @@ class InitCommand extends Command
                 error("  ✗ Failed to parse composer.json: " . json_last_error_msg());
                 return;
             }
+
+            $composer['scripts']['setup'] = [
+                'composer install',
+                '@php -r "file_exists(\'.env\') || copy(\'.env.example\', \'.env\');"',
+                '@php artisan key:generate',
+                '@php artisan migrate --force',
+                'npm install',
+                'npm run build'
+            ];
 
             $composer['scripts']['dev'] = [
                 'Composer\\Config::disableProcessTimeout',
