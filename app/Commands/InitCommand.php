@@ -269,8 +269,8 @@ class InitCommand extends Command
         // Step 3: Install dev dependencies
         if (!$skipInstall) {
             spin(
-                callback: fn() => $this->executeProcess(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan'], $path),
-                message: 'Installing PHPStan...'
+                callback: fn() => $this->executeProcess(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan', 'laravel/boost'], $path),
+                message: 'Installing PHPStan and Laravel Boost...'
             );
         }
 
@@ -279,6 +279,12 @@ class InitCommand extends Command
             spin(
                 callback: fn() => $this->executeProcess(['composer', 'require', 'brain-nucleus/client'], $path),
                 message: 'Installing Brain Nucleus client...'
+            );
+
+            // Install Boost configuration if possible
+            spin(
+                callback: fn() => $this->executeProcess(['php', 'artisan', 'boost:install', '--no-interaction'], $path),
+                message: 'Configuring Laravel Boost...'
             );
         }
 

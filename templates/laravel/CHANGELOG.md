@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vite 7 for asset bundling with hot module replacement (HMR)
 - SEO components (meta tags, Open Graph, JSON-LD)
 - Custom error pages (404, 500)
+- Laravel Boost for AI-assisted development
 - SQLite database (default configuration)
 - PHPUnit testing framework
 - Comprehensive README documentation
