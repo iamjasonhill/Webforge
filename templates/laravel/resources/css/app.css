@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+
+@theme {
+  --font-sans:
+    Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Compatibility for Tailwind v3 default border colors */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}

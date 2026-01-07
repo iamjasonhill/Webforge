@@ -419,7 +419,16 @@ class InitCommand extends Command
                 callback: fn() => $this->executeProcess(['npm', 'install', 'concurrently', '--save-dev'], $path),
                 message: 'Installing concurrently...'
             );
+            spin(
+                callback: fn() => $this->executeProcess(['npm', 'install', 'tailwindcss@next', '@tailwindcss/postcss@next', '@tailwindcss/vite@next', '@tailwindcss/forms', 'postcss', '--save-dev'], $path),
+                message: 'Upgrading to Tailwind CSS v4...'
+            );
         }
+
+        // Step 14: Copy Tailwind 4 Configs
+        info('🎨 Setting up Tailwind 4...');
+        $this->copyTemplate('laravel/postcss.config.js', $path . '/postcss.config.js');
+        $this->copyTemplate('laravel/resources/css/app.css', $path . '/resources/css/app.css');
 
         // Done!
         info("\n✅ Laravel project scaffolded successfully!\n");
