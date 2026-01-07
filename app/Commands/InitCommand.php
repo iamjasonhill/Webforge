@@ -359,6 +359,7 @@ class InitCommand extends Command
         foreach ($docs as $doc) {
             $this->copyTemplate('laravel/' . $doc, $path . '/' . $doc);
         }
+        $this->copyTemplate('laravel/docs/PROJECT-CHECKLIST.md', $path . '/docs/PROJECT-CHECKLIST.md');
         
         // Replace placeholders in docs and config
         $filesToProcess = [
