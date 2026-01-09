@@ -438,6 +438,10 @@ class InitCommand extends Command
         $this->copyTemplate('laravel/resources/css/app.css', $path . '/resources/css/app.css');
 
         // Done!
+        // Step 15: Configure Database (PostgreSQL)
+        info('🐘 Configuring PostgreSQL as default database...');
+        $this->configureDatabase($path, 'pgsql');
+
         info("\n✅ Laravel project scaffolded successfully!\n");
         info("📁 Location: {$path}");
         info("\n🚀 Next steps:");
@@ -447,6 +451,34 @@ class InitCommand extends Command
         info("   composer dev");
 
         return self::SUCCESS;
+    }
+
+    private function configureDatabase(string $path, string $driver): void
+    {
+        $files = ['.env', '.env.example'];
+
+        foreach ($files as $file) {
+            $filePath = $path . '/' . $file;
+            if (file_exists($filePath)) {
+                $content = file_get_contents($filePath);
+                if ($content !== false) {
+                    // Replace connection
+                    $content = preg_replace('/^DB_CONNECTION=.*$/m', "DB_CONNECTION={$driver}", $content);
+                    
+                    // Uncomment and set defaults if commented out (Laravel 11 style)
+                    $content = preg_replace('/^#\s*DB_HOST=.*$/m', 'DB_HOST=127.0.0.1', $content);
+                    $content = preg_replace('/^#\s*DB_PORT=.*$/m', 'DB_PORT=5432', $content);
+                    $content = preg_replace('/^#\s*DB_DATABASE=.*$/m', 'DB_DATABASE=laravel', $content);
+                    $content = preg_replace('/^#\s*DB_USERNAME=.*$/m', 'DB_USERNAME=root', $content);
+                    $content = preg_replace('/^#\s*DB_PASSWORD=.*$/m', 'DB_PASSWORD=', $content);
+
+                    // Also handle non-commented (older Laravel or already set)
+                    $content = preg_replace('/^DB_PORT=.*$/m', 'DB_PORT=5432', $content);
+
+                    file_put_contents($filePath, $content);
+                }
+            }
+        }
     }
 
     private function scaffoldStaticPhp(string $name, string $path, bool $withSeo): int
