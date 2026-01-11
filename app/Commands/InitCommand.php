@@ -269,8 +269,31 @@ class InitCommand extends Command
         // Step 3: Install dev dependencies
         if (!$skipInstall) {
             spin(
-                callback: fn() => $this->executeProcess(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan', 'laravel/boost'], $path),
-                message: 'Installing PHPStan and Laravel Boost...'
+                callback: fn() => $this->executeProcess(['composer', 'require', '--dev', 'larastan/larastan', 'phpstan/phpstan', 'laravel/boost', 'laravel/pail'], $path),
+                message: 'Installing Pail, PHPStan, and Laravel Boost...'
+            );
+        }
+
+        // Step 3b: Install Production Packages (Horizon, Volt, Sanctum)
+        if (!$skipInstall) {
+            spin(
+                callback: fn() => $this->executeProcess(['composer', 'require', 'laravel/horizon', 'livewire/volt'], $path),
+                message: 'Installing Horizon and Volt...'
+            );
+
+            spin(
+                callback: fn() => $this->executeProcess(['php', 'artisan', 'horizon:install', '--no-interaction'], $path),
+                message: 'Configuring Horizon...'
+            );
+
+            spin(
+                callback: fn() => $this->executeProcess(['php', 'artisan', 'volt:install', '--no-interaction'], $path),
+                message: 'Configuring Volt...'
+            );
+
+            spin(
+                callback: fn() => $this->executeProcess(['php', 'artisan', 'install:api', '--no-interaction'], $path),
+                message: 'Configuring API (Sanctum)...'
             );
         }
 

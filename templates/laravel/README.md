@@ -15,7 +15,11 @@
 
 - 🔐 Authentication with Laravel Breeze
 - 🎨 Tailwind CSS v4 with dark mode support
+- 🤖 Laravel Boost for AI-assisted development
 - ⚡ Vite for fast asset bundling
+- 🚦 Laravel Horizon for queue monitoring
+- 🔌 Livewire Volt for functional components
+- 🛡️ Laravel Sanctum for API authentication
 - 🧪 PHPUnit testing setup
 - 🔍 Code quality tools (Pint, PHPStan)
 - 🚀 GitHub Actions CI/CD
