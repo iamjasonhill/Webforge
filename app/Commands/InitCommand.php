@@ -316,11 +316,16 @@ class InitCommand extends Command
             );
         }
 
-        // Step 5: Copy config files
+        // Step 5: Copy configuration files (Directly type-safe)
         info('📄 Copying configuration files...');
         $this->copyTemplate('laravel/config/pint.json', $path . '/pint.json');
         $this->copyTemplate('laravel/config/phpstan.neon', $path . '/phpstan.neon');
-        $this->copyTemplate('laravel/config/phpstan-baseline.neon', $path . '/phpstan-baseline.neon');
+        $this->copyTemplate('laravel/config/app.php', $path . '/config/app.php');
+        $this->copyTemplate('laravel/config/database.php', $path . '/config/database.php');
+        $this->copyTemplate('laravel/config/services.php', $path . '/config/services.php');
+        $this->copyTemplate('laravel/config/sanctum.php', $path . '/config/sanctum.php');
+        $this->copyTemplate('laravel/config/horizon.php', $path . '/config/horizon.php');
+        $this->copyTemplate('laravel/config/filesystems.php', $path . '/config/filesystems.php');
 
         // Step 6: Copy SEO components if requested
         if ($withSeo) {
@@ -443,12 +448,6 @@ class InitCommand extends Command
 
         // Step 12: Add Brain env vars (always included)
         $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
-
-        // Step 12b: Copy Type-Safe Configs (for PHPStan)
-        info('⚙️  Configuring type-safe settings...');
-        $this->copyTemplate('laravel/config/sanctum.php', $path . '/config/sanctum.php');
-        $this->copyTemplate('laravel/config/horizon.php', $path . '/config/horizon.php');
-        $this->copyTemplate('laravel/config/filesystems.php', $path . '/config/filesystems.php');
 
         // Step 13: NPM install
         if (!$skipInstall) {
