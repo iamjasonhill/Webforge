@@ -441,15 +441,14 @@ class InitCommand extends Command
         info('📝 Adding composer scripts...');
         $this->addComposerScripts($path);
 
-        // Step 11b: Generate initial PHPStan baseline (to clear skeleton errors)
-        info('🔬 Generating initial PHPStan baseline...');
-        spin(
-            callback: fn() => $this->executeProcess(['./vendor/bin/phpstan', 'analyse', '--generate-baseline', 'phpstan-baseline.neon', '--allow-empty-baseline', '--memory-limit=2G'], $path),
-            message: 'Generating static analysis baseline...'
-        );
-
         // Step 12: Add Brain env vars (always included)
         $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
+
+        // Step 12b: Copy Type-Safe Configs (for PHPStan)
+        info('⚙️  Configuring type-safe settings...');
+        $this->copyTemplate('laravel/config/sanctum.php', $path . '/config/sanctum.php');
+        $this->copyTemplate('laravel/config/horizon.php', $path . '/config/horizon.php');
+        $this->copyTemplate('laravel/config/filesystems.php', $path . '/config/filesystems.php');
 
         // Step 13: NPM install
         if (!$skipInstall) {

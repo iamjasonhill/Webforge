@@ -1,7 +1,0 @@
-parameters:
-	ignoreErrors:
-		-
-			message: "#^.*$#"
-			count: 0
-			path: app
-			reportUnmatched: false
