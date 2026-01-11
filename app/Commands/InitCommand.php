@@ -441,6 +441,13 @@ class InitCommand extends Command
         info('📝 Adding composer scripts...');
         $this->addComposerScripts($path);
 
+        // Step 11b: Generate initial PHPStan baseline (to clear skeleton errors)
+        info('🔬 Generating initial PHPStan baseline...');
+        spin(
+            callback: fn() => $this->executeProcess(['./vendor/bin/phpstan', 'analyse', '--generate-baseline', 'phpstan-baseline.neon', '--allow-empty-baseline', '--memory-limit=2G'], $path),
+            message: 'Generating static analysis baseline...'
+        );
+
         // Step 12: Add Brain env vars (always included)
         $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus\nBRAIN_BASE_URL=\nBRAIN_API_KEY=\n");
 
@@ -463,6 +470,7 @@ class InitCommand extends Command
         // Step 14: Copy Tailwind 4 Configs
         info('🎨 Setting up Tailwind 4...');
         $this->copyTemplate('laravel/postcss.config.js', $path . '/postcss.config.js');
+        $this->copyTemplate('laravel/vite.config.js', $path . '/vite.config.js');
         $this->copyTemplate('laravel/resources/css/app.css', $path . '/resources/css/app.css');
 
         // Step 15: Copy Custom Seeder
