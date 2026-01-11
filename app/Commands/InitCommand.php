@@ -81,7 +81,12 @@ class InitCommand extends Command
         );
 
         // Get path
-        $defaultPath = '/Users/jasonhill/Projects/Websites Control Folder/' . $name;
+        $baseDir = match ($platform) {
+            'laravel' => 'laravel-projects',
+            'astro' => 'Websites Control Folder',
+            default => 'non-laravel-projects',
+        };
+        $defaultPath = "/Users/jasonhill/Projects/{$baseDir}/" . $name;
         $path = $this->option('path') ?? text(
             label: 'Where should we create the project?',
             default: $defaultPath,
@@ -460,8 +465,16 @@ class InitCommand extends Command
         $this->copyTemplate('laravel/postcss.config.js', $path . '/postcss.config.js');
         $this->copyTemplate('laravel/resources/css/app.css', $path . '/resources/css/app.css');
 
+        // Step 15: Copy Custom Seeder
+        info('🌱 Setting up default database seeder...');
+        $seederPath = $path . '/database/seeders';
+        if (!is_dir($seederPath)) {
+            mkdir($seederPath, 0755, true);
+        }
+        $this->copyTemplate('laravel/database/seeders/DatabaseSeeder.php', $seederPath . '/DatabaseSeeder.php');
+
         // Done!
-        // Step 15: Configure Database (PostgreSQL)
+        // Step 16: Configure Database (PostgreSQL)
         info('🐘 Configuring PostgreSQL as default database...');
         $this->configureDatabase($path, 'pgsql');
 
@@ -891,7 +904,7 @@ class InitCommand extends Command
                 'composer install',
                 '@php -r "file_exists(\'.env\') || copy(\'.env.example\', \'.env\');"',
                 '@php artisan key:generate',
-                '@php artisan migrate --force',
+                '@php artisan migrate --seed --force',
                 'npm install',
                 'npm run build'
             ];
