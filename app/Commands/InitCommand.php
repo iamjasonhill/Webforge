@@ -455,8 +455,8 @@ class InitCommand extends Command
                 message: 'Installing concurrently...'
             );
             spin(
-                callback: fn() => $this->executeProcess(['npm', 'install', 'tailwindcss@next', '@tailwindcss/postcss@next', '@tailwindcss/vite@next', '@tailwindcss/forms', 'postcss', '--save-dev'], $path),
-                message: 'Upgrading to Tailwind CSS v4...'
+                callback: fn() => $this->executeProcess(['npm', 'install', 'tailwindcss@latest', '@tailwindcss/postcss@latest', '@tailwindcss/vite@latest', '@tailwindcss/forms', 'postcss', '--save-dev', '--legacy-peer-deps'], $path),
+                message: 'Setting up Tailwind CSS v4...'
             );
         }
 
