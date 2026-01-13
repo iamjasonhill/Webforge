@@ -346,6 +346,8 @@ class AuditCommand extends Command
         return match ($projectType) {
             'laravel' => file_exists($path . '/app/Http/Middleware/SecurityHeaders.php')
             || $this->grepInFile($path . '/app/Http/Kernel.php', 'SecurityHeaders'),
+            'astro' => (file_exists($path . '/vercel.json') && $this->grepInFile($path . '/vercel.json', '"headers"'))
+            || (file_exists($path . '/netlify.toml') && $this->grepInFile($path . '/netlify.toml', '[[headers]]')),
             default => false,
         };
     }

@@ -507,15 +507,19 @@ class InitCommand extends Command
                     // Replace connection
                     $content = preg_replace('/^DB_CONNECTION=.*$/m', "DB_CONNECTION={$driver}", $content);
                     
+                    $defaultUsername = $driver === 'pgsql' ? 'postgres' : 'root';
+                    $defaultPort = $driver === 'pgsql' ? '5432' : '3306';
+                    
                     // Uncomment and set defaults if commented out (Laravel 11 style)
                     $content = preg_replace('/^#\s*DB_HOST=.*$/m', 'DB_HOST=127.0.0.1', $content);
-                    $content = preg_replace('/^#\s*DB_PORT=.*$/m', 'DB_PORT=5432', $content);
+                    $content = preg_replace('/^#\s*DB_PORT=.*$/m', "DB_PORT={$defaultPort}", $content);
                     $content = preg_replace('/^#\s*DB_DATABASE=.*$/m', 'DB_DATABASE=laravel', $content);
-                    $content = preg_replace('/^#\s*DB_USERNAME=.*$/m', 'DB_USERNAME=root', $content);
+                    $content = preg_replace('/^#\s*DB_USERNAME=.*$/m', "DB_USERNAME={$defaultUsername}", $content);
                     $content = preg_replace('/^#\s*DB_PASSWORD=.*$/m', 'DB_PASSWORD=', $content);
 
                     // Also handle non-commented (older Laravel or already set)
-                    $content = preg_replace('/^DB_PORT=.*$/m', 'DB_PORT=5432', $content);
+                    $content = preg_replace('/^DB_PORT=.*$/m', "DB_PORT={$defaultPort}", $content);
+                    $content = preg_replace('/^DB_USERNAME=.*$/m', "DB_USERNAME={$defaultUsername}", $content);
 
                     file_put_contents($filePath, $content);
                 }
@@ -656,6 +660,9 @@ class InitCommand extends Command
         // Add Brain env vars to .env.example (always included)
         $this->appendToFile($path . '/.env.example', "\n# Brain Nucleus Analytics\nPUBLIC_BRAIN_URL=\nPUBLIC_BRAIN_KEY=\n");
 
+        // Copy Scripts
+        $this->copyDirectory('astro/scripts', $path . '/scripts');
+
         // Step 3: Copy source files
         info('📂 Copying project source files...');
 
@@ -741,6 +748,13 @@ class InitCommand extends Command
         // Step 7: Add npm scripts
         $this->addAstroNpmScripts($path);
 
+        // Step 8: Setup Husky pre-commit hook
+        info('🪝 Setting up pre-commit hook...');
+        $this->copyTemplate('astro/.husky/pre-commit', $path . '/.husky/pre-commit');
+        if (file_exists($path . '/.husky/pre-commit')) {
+            chmod($path . '/.husky/pre-commit', 0755);
+        }
+
         // Brain Nucleus Analytics is included via:
         // - brain-analytics.js (copied to public/)
         // - BrainAnalytics.astro component (copied to src/components/)
@@ -791,6 +805,23 @@ class InitCommand extends Command
             $package['scripts']['prepare'] = 'husky';
             $package['scripts']['test'] = 'vitest';
             $package['scripts']['test:run'] = 'vitest run';
+            
+            // SEO Analysis Scripts
+            $package['scripts']['seo:audit'] = 'node scripts/seo-audit.mjs';
+            $package['scripts']['analyze:headings'] = 'node scripts/analyze-question-headings.mjs';
+            $package['scripts']['analyze:duplicates'] = 'node scripts/detect-duplicate-seo.mjs';
+            $package['scripts']['analyze:alt-text'] = 'node scripts/analyze-image-alt-text.mjs';
+            $package['scripts']['analyze:content'] = 'node scripts/analyze-content-uniqueness.mjs';
+            $package['scripts']['suggest:content'] = 'node scripts/suggest-content-improvements.mjs';
+
+            // Add dependencies for scripts
+            if (!isset($package['dependencies'])) {
+                $package['dependencies'] = [];
+            }
+            $package['dependencies']['dotenv'] = '^16.4.5';
+            $package['dependencies']['glob'] = '^10.3.10';
+            $package['dependencies']['jsdom'] = '^24.0.0';
+            $package['dependencies']['chalk'] = '^5.3.0';
 
             $json = json_encode($package, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
             if ($json === false) {
@@ -865,6 +896,32 @@ class InitCommand extends Command
             info("  ✓ Created: " . basename($destPath));
         } catch (\Exception $e) {
             error("  ✗ Error copying template {$templatePath}: " . $e->getMessage());
+        }
+    }
+
+    private function copyDirectory(string $templatePath, string $destPath): void
+    {
+        $sourcePath = $this->templatesPath . '/' . $templatePath;
+
+        if (!File::exists($sourcePath)) {
+            warning("  ⚠ Template directory not found: {$templatePath}");
+            return;
+        }
+
+        try {
+            // Ensure destination directory exists
+            if (!File::exists($destPath)) {
+                File::makeDirectory($destPath, 0755, true);
+            }
+
+            if (!File::copyDirectory($sourcePath, $destPath)) {
+                error("  ✗ Failed to copy directory: {$templatePath} to {$destPath}");
+                return;
+            }
+
+            info("  ✓ Copied directory: " . basename($destPath));
+        } catch (\Exception $e) {
+            error("  ✗ Error copying directory {$templatePath}: " . $e->getMessage());
         }
     }
 
