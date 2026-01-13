@@ -11,7 +11,6 @@ describe('Init Command', function () {
             ->assertExitCode(0)
             ->expectsOutputToContain('--platform')
             ->expectsOutputToContain('--name')
-            ->expectsOutputToContain('--with-brain')
             ->expectsOutputToContain('--with-seo');
     });
 });

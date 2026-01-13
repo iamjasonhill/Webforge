@@ -1,0 +1,30 @@
+#!/bin/sh
+# WebForge Pre-commit Hook
+
+echo "🔍 Running pre-commit checks..."
+
+# Lint
+echo "📝 Running Lint..."
+npm run lint
+if [ $? -ne 0 ]; then 
+    echo "❌ Linting failed."
+    exit 1
+fi
+
+# Format Check
+echo "🎨 Running Format Check..."
+npm run format:check
+if [ $? -ne 0 ]; then 
+    echo "❌ Formatting check failed. Run 'npm run format' to fix."
+    exit 1
+fi
+
+# Test
+echo "🧪 Running Tests..."
+npm run test:run
+if [ $? -ne 0 ]; then 
+    echo "❌ Tests failed."
+    exit 1
+fi
+
+echo "✅ All checks passed!"

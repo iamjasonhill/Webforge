@@ -24,7 +24,7 @@ class DomainMonitorClient
      */
     public function isConfigured(): bool
     {
-        return !empty($this->baseUrl) && !empty($this->apiKey);
+        return ! empty($this->baseUrl) && ! empty($this->apiKey);
     }
 
     /**
@@ -86,21 +86,25 @@ class DomainMonitorClient
      */
     private function request(string $method, string $endpoint, array $query = []): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             throw new \Exception(
                 'Domain Monitor is not configured. Set DOMAIN_MONITOR_URL and DOMAIN_MONITOR_API_KEY environment variables.'
             );
         }
 
-        $url = $this->baseUrl . $endpoint;
+        $url = $this->baseUrl.$endpoint;
 
-        $response = Http::withHeaders([
+        $http = Http::withHeaders([
             'X-API-Key' => $this->apiKey,
             'Accept' => 'application/json',
         ])
-            ->timeout($this->timeout)
-            ->when($method === 'GET', fn($http) => $http->get($url, $query))
-            ->when($method === 'POST', fn($http) => $http->post($url, $query));
+            ->timeout($this->timeout);
+
+        $response = match ($method) {
+            'GET' => $http->get($url, $query),
+            'POST' => $http->post($url, $query),
+            default => throw new \InvalidArgumentException("Unsupported method: {$method}"),
+        };
 
         if ($response->failed()) {
             $status = $response->status();

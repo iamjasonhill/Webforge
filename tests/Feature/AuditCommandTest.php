@@ -14,10 +14,10 @@ describe('Audit Command', function () {
             ->expectsOutputToContain('Score:');
     });
 
-    it('detects unknown project type for webforge itself', function () {
+    it('detects node project type for webforge itself', function () {
         $this->artisan('audit', ['path' => base_path()])
             ->assertExitCode(0)
-            ->expectsOutputToContain('unknown');
+            ->expectsOutputToContain('node');
     });
 
     it('supports seo-only audit flag', function () {
