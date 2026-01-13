@@ -738,6 +738,7 @@ class InitCommand extends Command
             mkdir($workflowsPath, 0755, true);
         }
         $this->copyTemplate('astro/.github/workflows/ci.yml', $workflowsPath.'/ci.yml');
+        $this->copyTemplate('astro/.github/dependabot.yml', $path.'/.github/dependabot.yml');
 
         // Step 6: Copy project documentation
         info('📚 Setting up project docs...');
@@ -817,7 +818,11 @@ class InitCommand extends Command
             $package['scripts']['analyze:duplicates'] = 'node scripts/detect-duplicate-seo.mjs';
             $package['scripts']['analyze:alt-text'] = 'node scripts/analyze-image-alt-text.mjs';
             $package['scripts']['analyze:content'] = 'node scripts/analyze-content-uniqueness.mjs';
+            $package['scripts']['analyze:content'] = 'node scripts/analyze-content-uniqueness.mjs';
             $package['scripts']['suggest:content'] = 'node scripts/suggest-content-improvements.mjs';
+            $package['scripts']['validate'] = 'node scripts/validate-structure.mjs';
+            $package['scripts']['check:structure'] = 'node scripts/analyze-heading-structure.mjs';
+            $package['scripts']['check:links'] = 'node scripts/analyze-internal-links.mjs';
 
             // Add dependencies for scripts
             if (! isset($package['dependencies'])) {
