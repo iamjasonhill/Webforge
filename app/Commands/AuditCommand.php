@@ -37,21 +37,21 @@ class AuditCommand extends Command
         info("Detected project type: {$projectType}\n");
 
         // Run audits based on options
-        if ($this->option('seo') || !$this->hasAnyOption()) {
+        if ($this->option('seo') || ! $this->hasAnyOption()) {
             [$seoResults, $seoScore, $seoMax] = $this->auditSeo($path, $projectType);
             $results = array_merge($results, $seoResults);
             $score += $seoScore;
             $maxScore += $seoMax;
         }
 
-        if ($this->option('performance') || !$this->hasAnyOption()) {
+        if ($this->option('performance') || ! $this->hasAnyOption()) {
             [$perfResults, $perfScore, $perfMax] = $this->auditPerformance($path, $projectType);
             $results = array_merge($results, $perfResults);
             $score += $perfScore;
             $maxScore += $perfMax;
         }
 
-        if ($this->option('accessibility') || !$this->hasAnyOption()) {
+        if ($this->option('accessibility') || ! $this->hasAnyOption()) {
             [$a11yResults, $a11yScore, $a11yMax] = $this->auditAccessibility($path, $projectType);
             $results = array_merge($results, $a11yResults);
             $score += $a11yScore;
@@ -59,7 +59,7 @@ class AuditCommand extends Command
         }
 
         // Display results
-        if (!empty($results)) {
+        if (! empty($results)) {
             table(
                 headers: ['Check', 'Status', 'Details'],
                 rows: $results
@@ -88,18 +88,19 @@ class AuditCommand extends Command
 
     private function detectProjectType(string $path): string
     {
-        if (file_exists($path . '/artisan')) {
+        if (file_exists($path.'/artisan')) {
             return 'laravel';
         }
-        if (file_exists($path . '/wp-config.php') || file_exists($path . '/wp-content')) {
+        if (file_exists($path.'/wp-config.php') || file_exists($path.'/wp-content')) {
             return 'wordpress';
         }
-        if (file_exists($path . '/astro.config.mjs') || file_exists($path . '/astro.config.js')) {
+        if (file_exists($path.'/astro.config.mjs') || file_exists($path.'/astro.config.js')) {
             return 'astro';
         }
-        if (file_exists($path . '/package.json')) {
+        if (file_exists($path.'/package.json')) {
             return 'node';
         }
+
         return 'unknown';
     }
 
@@ -241,61 +242,62 @@ class AuditCommand extends Command
     private function hasSitemap(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/public/sitemap.xml')
-            || file_exists($path . '/routes/sitemap.php')
-            || $this->grepInFile($path . '/routes/web.php', 'sitemap'),
+            'laravel' => file_exists($path.'/public/sitemap.xml')
+            || file_exists($path.'/routes/sitemap.php')
+            || $this->grepInFile($path.'/routes/web.php', 'sitemap'),
             'wordpress' => true, // Usually handled by plugins
-            'astro' => file_exists($path . '/public/sitemap.xml'),
-            default => file_exists($path . '/sitemap.xml'),
+            'astro' => file_exists($path.'/public/sitemap.xml'),
+            default => file_exists($path.'/sitemap.xml'),
         };
     }
 
     private function hasRobots(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/public/robots.txt')
-            || $this->grepInFile($path . '/routes/web.php', 'robots'),
+            'laravel' => file_exists($path.'/public/robots.txt')
+            || $this->grepInFile($path.'/routes/web.php', 'robots'),
             'wordpress' => true, // WordPress generates it
-            'astro' => file_exists($path . '/public/robots.txt'),
-            default => file_exists($path . '/robots.txt'),
+            'astro' => file_exists($path.'/public/robots.txt'),
+            default => file_exists($path.'/robots.txt'),
         };
     }
 
     private function hasMetaComponent(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/resources/views/components/seo-head.blade.php')
-            || file_exists($path . '/app/View/Components/SeoHead.php'),
-            'astro' => file_exists($path . '/src/components/SEO.astro'),
+            'laravel' => file_exists($path.'/resources/views/components/seo-head.blade.php')
+            || file_exists($path.'/app/View/Components/SeoHead.php'),
+            'astro' => file_exists($path.'/src/components/SEO.astro'),
             default => false,
         };
     }
 
     private function grepInFile(string $file, string $needle): bool
     {
-        if (!file_exists($file)) {
+        if (! file_exists($file)) {
             return false;
         }
+
         return str_contains(file_get_contents($file), $needle);
     }
 
     private function hasFavicon(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/public/favicon.ico')
-            || file_exists($path . '/public/favicon.svg'),
-            'astro' => file_exists($path . '/public/favicon.ico')
-            || file_exists($path . '/public/favicon.svg'),
-            default => file_exists($path . '/favicon.ico'),
+            'laravel' => file_exists($path.'/public/favicon.ico')
+            || file_exists($path.'/public/favicon.svg'),
+            'astro' => file_exists($path.'/public/favicon.ico')
+            || file_exists($path.'/public/favicon.svg'),
+            default => file_exists($path.'/favicon.ico'),
         };
     }
 
     private function hasLazyLoading(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => $this->grepInDirectory($path . '/resources/views', 'loading="lazy"')
-            || $this->grepInDirectory($path . '/resources/views', "loading='lazy'"),
-            'astro' => $this->grepInDirectory($path . '/src', 'loading="lazy"'),
+            'laravel' => $this->grepInDirectory($path.'/resources/views', 'loading="lazy"')
+            || $this->grepInDirectory($path.'/resources/views', "loading='lazy'"),
+            'astro' => $this->grepInDirectory($path.'/src', 'loading="lazy"'),
             default => false,
         };
     }
@@ -303,10 +305,10 @@ class AuditCommand extends Command
     private function hasAsyncScripts(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => $this->grepInDirectory($path . '/resources/views', 'defer')
-            || $this->grepInDirectory($path . '/resources/views', 'async'),
-            'astro' => $this->grepInDirectory($path . '/src', 'defer')
-            || $this->grepInDirectory($path . '/src', 'async'),
+            'laravel' => $this->grepInDirectory($path.'/resources/views', 'defer')
+            || $this->grepInDirectory($path.'/resources/views', 'async'),
+            'astro' => $this->grepInDirectory($path.'/src', 'defer')
+            || $this->grepInDirectory($path.'/src', 'async'),
             default => false,
         };
     }
@@ -315,16 +317,16 @@ class AuditCommand extends Command
     {
         // Check if images have alt attributes - look for img tags with alt
         return match ($projectType) {
-            'laravel' => $this->grepInDirectory($path . '/resources/views', 'alt="')
-            || $this->grepInDirectory($path . '/resources/views', "alt='"),
-            'astro' => $this->grepInDirectory($path . '/src', 'alt="'),
+            'laravel' => $this->grepInDirectory($path.'/resources/views', 'alt="')
+            || $this->grepInDirectory($path.'/resources/views', "alt='"),
+            'astro' => $this->grepInDirectory($path.'/src', 'alt="'),
             default => false,
         };
     }
 
     private function grepInDirectory(string $directory, string $needle): bool
     {
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             return false;
         }
 
@@ -344,10 +346,10 @@ class AuditCommand extends Command
     private function hasSecurityMiddleware(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/app/Http/Middleware/SecurityHeaders.php')
-            || $this->grepInFile($path . '/app/Http/Kernel.php', 'SecurityHeaders'),
-            'astro' => (file_exists($path . '/vercel.json') && $this->grepInFile($path . '/vercel.json', '"headers"'))
-            || (file_exists($path . '/netlify.toml') && $this->grepInFile($path . '/netlify.toml', '[[headers]]')),
+            'laravel' => file_exists($path.'/app/Http/Middleware/SecurityHeaders.php')
+            || $this->grepInFile($path.'/app/Http/Kernel.php', 'SecurityHeaders'),
+            'astro' => (file_exists($path.'/vercel.json') && $this->grepInFile($path.'/vercel.json', '"headers"'))
+            || (file_exists($path.'/netlify.toml') && $this->grepInFile($path.'/netlify.toml', '[[headers]]')),
             default => false,
         };
     }
@@ -355,9 +357,9 @@ class AuditCommand extends Command
     private function hasErrorPages(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/resources/views/errors/404.blade.php')
-            && file_exists($path . '/resources/views/errors/500.blade.php'),
-            'astro' => file_exists($path . '/src/pages/404.astro'),
+            'laravel' => file_exists($path.'/resources/views/errors/404.blade.php')
+            && file_exists($path.'/resources/views/errors/500.blade.php'),
+            'astro' => file_exists($path.'/src/pages/404.astro'),
             default => false,
         };
     }
@@ -365,21 +367,21 @@ class AuditCommand extends Command
     private function hasWebManifest(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => file_exists($path . '/public/manifest.json')
-            || file_exists($path . '/public/site.webmanifest'),
-            'astro' => file_exists($path . '/public/manifest.json')
-            || file_exists($path . '/public/site.webmanifest'),
-            default => file_exists($path . '/manifest.json'),
+            'laravel' => file_exists($path.'/public/manifest.json')
+            || file_exists($path.'/public/site.webmanifest'),
+            'astro' => file_exists($path.'/public/manifest.json')
+            || file_exists($path.'/public/site.webmanifest'),
+            default => file_exists($path.'/manifest.json'),
         };
     }
 
     private function hasSkipLink(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => $this->grepInDirectory($path . '/resources/views', 'skip')
-            && $this->grepInDirectory($path . '/resources/views', '#main'),
-            'astro' => file_exists($path . '/src/components/SkipLink.astro')
-            || $this->grepInDirectory($path . '/src', 'skip-link'),
+            'laravel' => $this->grepInDirectory($path.'/resources/views', 'skip')
+            && $this->grepInDirectory($path.'/resources/views', '#main'),
+            'astro' => file_exists($path.'/src/components/SkipLink.astro')
+            || $this->grepInDirectory($path.'/src', 'skip-link'),
             default => false,
         };
     }
@@ -387,8 +389,8 @@ class AuditCommand extends Command
     private function hasLangAttribute(string $path, string $projectType): bool
     {
         return match ($projectType) {
-            'laravel' => $this->grepInDirectory($path . '/resources/views', 'lang="'),
-            'astro' => $this->grepInDirectory($path . '/src', '<html lang'),
+            'laravel' => $this->grepInDirectory($path.'/resources/views', 'lang="'),
+            'astro' => $this->grepInDirectory($path.'/src', '<html lang'),
             default => false,
         };
     }

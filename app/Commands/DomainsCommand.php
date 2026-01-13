@@ -22,7 +22,7 @@ class DomainsCommand extends Command
 
     public function handle(DomainMonitorClient $client): int
     {
-        if (!$client->isConfigured()) {
+        if (! $client->isConfigured()) {
             error('Domain Monitor is not configured.');
             info('Set these environment variables:');
             info('  DOMAIN_MONITOR_URL=https://your-domain-monitor.example.com');
@@ -73,11 +73,11 @@ class DomainsCommand extends Command
                 $rows
             );
 
-            info("\nTotal: " . count($domains) . ' domains');
+            info("\nTotal: ".count($domains).' domains');
 
             return self::SUCCESS;
         } catch (\Exception $e) {
-            error('Failed to fetch domains: ' . $e->getMessage());
+            error('Failed to fetch domains: '.$e->getMessage());
 
             return self::FAILURE;
         }

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Site Configuration
  * Edit these values for your site

@@ -1,16 +1,16 @@
 <?php
+
 /**
  * JSON-LD Schema Helper
- * 
+ *
  * Usage:
  * <?php echo schema('WebSite'); ?>
  * <?php echo schema('Organization', ['logo' => '/logo.png']); ?>
  * <?php echo schema('Article', ['headline' => 'My Title', 'author' => 'John']); ?>
  */
-
 function schema(string $type, array $data = []): string
 {
-    $config = require __DIR__ . '/../config.php';
+    $config = require __DIR__.'/../config.php';
 
     $baseSchema = [
         '@context' => 'https://schema.org',
@@ -59,7 +59,7 @@ function schema(string $type, array $data = []): string
             break;
 
         case 'FAQPage':
-            $questions = array_map(fn($q) => [
+            $questions = array_map(fn ($q) => [
                 '@type' => 'Question',
                 'name' => $q['question'],
                 'acceptedAnswer' => [
@@ -74,7 +74,7 @@ function schema(string $type, array $data = []): string
             break;
 
         case 'BreadcrumbList':
-            $items = array_map(fn($item, $i) => [
+            $items = array_map(fn ($item, $i) => [
                 '@type' => 'ListItem',
                 'position' => $i + 1,
                 'name' => $item['name'],
@@ -90,5 +90,5 @@ function schema(string $type, array $data = []): string
             $schema = array_merge($baseSchema, $data);
     }
 
-    return '<script type="application/ld+json">' . json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';
+    return '<script type="application/ld+json">'.json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT).'</script>';
 }

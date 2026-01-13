@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use Illuminate\Support\Facades\File;
 use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\confirm;
@@ -44,19 +43,20 @@ class DocsUpdateCommand extends Command
 
         // Expand ~ to home directory
         if (str_starts_with($path, '~')) {
-            $path = $_SERVER['HOME'] . substr($path, 1);
+            $path = $_SERVER['HOME'].substr($path, 1);
         }
 
         // Convert to absolute path if relative
-        if (!str_starts_with($path, '/')) {
-            $path = getcwd() . '/' . $path;
+        if (! str_starts_with($path, '/')) {
+            $path = getcwd().'/'.$path;
         }
 
         // Check if docs directory exists
-        $docsPath = $path . '/docs';
-        if (!is_dir($docsPath)) {
-            if (!confirm('Create docs/ directory?', true)) {
+        $docsPath = $path.'/docs';
+        if (! is_dir($docsPath)) {
+            if (! confirm('Create docs/ directory?', true)) {
                 warning('Cancelled.');
+
                 return self::FAILURE;
             }
             mkdir($docsPath, 0755, true);
@@ -68,19 +68,21 @@ class DocsUpdateCommand extends Command
         $failed = 0;
 
         foreach ($this->docs as $filename => $templatePath) {
-            $destPath = $docsPath . '/' . $filename;
-            $sourcePath = $this->templatesPath . '/' . $templatePath;
+            $destPath = $docsPath.'/'.$filename;
+            $sourcePath = $this->templatesPath.'/'.$templatePath;
             $exists = file_exists($destPath);
 
-            if (!file_exists($sourcePath)) {
+            if (! file_exists($sourcePath)) {
                 error("  ✗ Template not found: {$templatePath}");
                 $failed++;
+
                 continue;
             }
 
-            if ($exists && !$this->option('force')) {
-                if (!confirm("Overwrite existing {$filename}?", true)) {
+            if ($exists && ! $this->option('force')) {
+                if (! confirm("Overwrite existing {$filename}?", true)) {
                     warning("  ⏭️  Skipped: {$filename}");
+
                     continue;
                 }
             }
@@ -97,15 +99,14 @@ class DocsUpdateCommand extends Command
             $updated++;
         }
 
-        info("\n" . ($updated > 0 ? "✅ Updated {$updated} document(s)" : "No documents updated"));
+        info("\n".($updated > 0 ? "✅ Updated {$updated} document(s)" : 'No documents updated'));
 
         if ($failed > 0) {
             warning("{$failed} document(s) failed to update");
         }
 
-        info("\n💡 Tip: Update Webforge to get latest templates: cd " . base_path() . " && git pull");
+        info("\n💡 Tip: Update Webforge to get latest templates: cd ".base_path().' && git pull');
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
 }
-

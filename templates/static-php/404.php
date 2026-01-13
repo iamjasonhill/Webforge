@@ -2,12 +2,11 @@
 /**
  * 404 Error Page
  */
-
 $page_title = 'Page Not Found';
 $page_description = 'The page you are looking for does not exist.';
 $noindex = true;
 
-$config = require __DIR__ . '/config.php';
+$config = require __DIR__.'/config.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +14,7 @@ $config = require __DIR__ . '/config.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php include __DIR__ . '/partials/head.php'; ?>
+    <?php include __DIR__.'/partials/head.php'; ?>
     <style>
         .error-page {
             min-height: 100vh;

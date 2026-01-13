@@ -1,12 +1,11 @@
 <?php
 /**
  * Site Header Partial
- * 
+ *
  * Variables (optional):
  * $skip_link_target - ID of main content (default: '#main-content')
  */
-
-$config = require __DIR__ . '/../config.php';
+$config = require __DIR__.'/../config.php';
 $skip_target = $skip_link_target ?? '#main-content';
 ?>
 

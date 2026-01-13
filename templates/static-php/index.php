@@ -9,7 +9,7 @@ $page_title = 'Home';
 $page_description = 'Welcome to our website';
 
 // Include schema helper
-require_once __DIR__ . '/partials/schema.php';
+require_once __DIR__.'/partials/schema.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,13 +17,13 @@ require_once __DIR__ . '/partials/schema.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php include __DIR__ . '/partials/head.php'; ?>
-    <?php include __DIR__ . '/partials/analytics.php'; ?>
+    <?php include __DIR__.'/partials/head.php'; ?>
+    <?php include __DIR__.'/partials/analytics.php'; ?>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>
-    <?php include __DIR__ . '/partials/header.php'; ?>
+    <?php include __DIR__.'/partials/header.php'; ?>
 
     <main id="main-content">
         <section class="hero">
@@ -32,7 +32,7 @@ require_once __DIR__ . '/partials/schema.php';
         </section>
     </main>
 
-    <?php include __DIR__ . '/partials/footer.php'; ?>
+    <?php include __DIR__.'/partials/footer.php'; ?>
 
     <!-- JSON-LD Schema -->
     <?= schema('WebSite') ?>

@@ -2,8 +2,7 @@
 /**
  * Site Footer Partial
  */
-
-$config = require __DIR__ . '/../config.php';
+$config = require __DIR__.'/../config.php';
 $year = date('Y');
 ?>
 

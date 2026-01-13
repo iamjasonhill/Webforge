@@ -4,7 +4,7 @@ use App\Commands\AuditCommand;
 
 describe('AuditCommand Unit Tests', function () {
     beforeEach(function () {
-        $this->command = new AuditCommand();
+        $this->command = new AuditCommand;
     });
 
     it('detects laravel projects by artisan file', function () {
@@ -13,15 +13,15 @@ describe('AuditCommand Unit Tests', function () {
         $method->setAccessible(true);
 
         // Create a temp directory with artisan file
-        $tempDir = sys_get_temp_dir() . '/webforge-test-' . uniqid();
+        $tempDir = sys_get_temp_dir().'/webforge-test-'.uniqid();
         mkdir($tempDir);
-        file_put_contents($tempDir . '/artisan', '<?php');
+        file_put_contents($tempDir.'/artisan', '<?php');
 
         $result = $method->invoke($this->command, $tempDir);
         expect($result)->toBe('laravel');
 
         // Cleanup
-        unlink($tempDir . '/artisan');
+        unlink($tempDir.'/artisan');
         rmdir($tempDir);
     });
 
@@ -30,14 +30,14 @@ describe('AuditCommand Unit Tests', function () {
         $method = $reflection->getMethod('detectProjectType');
         $method->setAccessible(true);
 
-        $tempDir = sys_get_temp_dir() . '/webforge-test-' . uniqid();
+        $tempDir = sys_get_temp_dir().'/webforge-test-'.uniqid();
         mkdir($tempDir);
-        file_put_contents($tempDir . '/wp-config.php', '<?php');
+        file_put_contents($tempDir.'/wp-config.php', '<?php');
 
         $result = $method->invoke($this->command, $tempDir);
         expect($result)->toBe('wordpress');
 
-        unlink($tempDir . '/wp-config.php');
+        unlink($tempDir.'/wp-config.php');
         rmdir($tempDir);
     });
 
@@ -46,14 +46,14 @@ describe('AuditCommand Unit Tests', function () {
         $method = $reflection->getMethod('detectProjectType');
         $method->setAccessible(true);
 
-        $tempDir = sys_get_temp_dir() . '/webforge-test-' . uniqid();
+        $tempDir = sys_get_temp_dir().'/webforge-test-'.uniqid();
         mkdir($tempDir);
-        file_put_contents($tempDir . '/astro.config.mjs', 'export default {};');
+        file_put_contents($tempDir.'/astro.config.mjs', 'export default {};');
 
         $result = $method->invoke($this->command, $tempDir);
         expect($result)->toBe('astro');
 
-        unlink($tempDir . '/astro.config.mjs');
+        unlink($tempDir.'/astro.config.mjs');
         rmdir($tempDir);
     });
 
@@ -62,7 +62,7 @@ describe('AuditCommand Unit Tests', function () {
         $method = $reflection->getMethod('detectProjectType');
         $method->setAccessible(true);
 
-        $tempDir = sys_get_temp_dir() . '/webforge-test-' . uniqid();
+        $tempDir = sys_get_temp_dir().'/webforge-test-'.uniqid();
         mkdir($tempDir);
 
         $result = $method->invoke($this->command, $tempDir);

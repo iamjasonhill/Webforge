@@ -2,22 +2,22 @@
 /**
  * Analytics Partial
  * Include before </head>
- * 
+ *
  * Variables (optional):
  * $analytics_id - Override config GA ID
  * $analytics_provider - 'gtag' (default), 'gtm', or 'plausible'
  */
-
-$config = require __DIR__ . '/../config.php';
+$config = require __DIR__.'/../config.php';
 
 $id = $analytics_id ?? $config['google_analytics_id'];
 $provider = $analytics_provider ?? 'gtag';
 
-if (empty($id))
+if (empty($id)) {
     return;
+}
 ?>
 
-<?php if ($provider === 'gtag'): ?>
+<?php if ($provider === 'gtag') { ?>
     <!-- Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=<?= htmlspecialchars($id) ?>"></script>
     <script>
@@ -26,9 +26,9 @@ if (empty($id))
         gtag('js', new Date());
         gtag('config', '<?= htmlspecialchars($id) ?>');
     </script>
-<?php endif; ?>
+<?php } ?>
 
-<?php if ($provider === 'gtm'): ?>
+<?php if ($provider === 'gtm') { ?>
     <!-- Google Tag Manager -->
     <script>
         (function (w, d, s, l, i) {
@@ -40,10 +40,10 @@ if (empty($id))
                     'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', '<?= htmlspecialchars($id) ?>');
     </script>
-<?php endif; ?>
+<?php } ?>
 
-<?php if ($provider === 'plausible'): ?>
+<?php if ($provider === 'plausible') { ?>
     <!-- Plausible Analytics -->
     <script defer data-domain="<?= parse_url($config['site_url'], PHP_URL_HOST) ?>"
         src="https://plausible.io/js/script.js"></script>
-<?php endif; ?>
+<?php } ?>
